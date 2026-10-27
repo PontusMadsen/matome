@@ -39,6 +39,9 @@ export function useContinue() {
   }, [qc])
   return { ...q, refreshing }
 }
-export const useWatchlist = () => useQuery({ queryKey: ['watchlist'], queryFn: () => window.flax.invoke('watchlist:list', undefined), staleTime: 60_000 })
+/** Titles removed this session: Plex's Discover service can keep listing them for a while, so they stay hidden until it stops. */
+export const removedFromWatchlist = new Set<string>()
+export const useWatchlist = () =>
+  useQuery({ queryKey: ['watchlist'], queryFn: () => window.flax.invoke('watchlist:list', undefined), staleTime: 60_000, select: (xs) => xs.filter((x) => !removedFromWatchlist.has(x.ratingKey)) })
 export const useSearch = (query: string) =>
   useQuery({ queryKey: ['search', query], queryFn: () => window.flax.invoke('search:query', { query }), enabled: query.trim().length > 0, placeholderData: (p) => p })

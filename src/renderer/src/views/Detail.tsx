@@ -166,8 +166,14 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
                   <Icon name="play" size={16} fill /> Play S{eps.data[nextUp]!.season}E{eps.data[nextUp]!.episode}
                 </button>
               )}
-              <button className="btn btn-lg" onClick={() => void act(window.flax.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => qc.invalidateQueries({ queryKey: ['episodes'] })))}>
-                <Icon name="check" size={16} /> {isWatched ? 'Mark unwatched' : 'Mark watched'}
+              <button
+                className="btn btn-lg"
+                aria-pressed={isWatched}
+                title={isWatched ? 'Watched on every server. Click to mark as unwatched' : 'Mark as watched on every server'}
+                style={isWatched ? { color: 'var(--accent)', borderColor: 'var(--accent)' } : undefined}
+                onClick={() => void act(window.flax.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => qc.invalidateQueries({ queryKey: ['episodes'] })))}
+              >
+                <Icon name="check" size={16} /> Watched
               </button>
               <select aria-label="Your rating" defaultValue="" onChange={(e) => void act(window.flax.invoke('title:rate', { id: t.id, rating: e.target.value === '' ? null : Number(e.target.value) }))}>
                 <option value="">Rate…</option>

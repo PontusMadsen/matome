@@ -42,7 +42,12 @@ export function installMock(): void {
     'update:status': () => ({ current: 'dev', state: 'disabled' }),
     'mpv:available': () => false,
     'playlists:list': () => [],
-    'watchlist:list': () => [],
+    // Like the live service, the list keeps returning an item for a while after it was removed.
+    'watchlist:list': () => [
+      { ratingKey: 'w1', title: 'Wanted One', year: 2026, type: 'movie', onWatchlist: true },
+      { ratingKey: 'w2', title: 'Wanted Two', year: 2025, type: 'show', onWatchlist: true },
+    ],
+    'watchlist:set': (r: { ratingKey: string }) => { if (r.ratingKey === 'w2' && (window as any).__failRemove) throw new Error('Plex said no') },
     'collections:list': () => [],
     'play:start': () => ({ url: '', session: 's' }),
     'play:streams': () => ({ audio: [], subtitles: [], markers: [] }),

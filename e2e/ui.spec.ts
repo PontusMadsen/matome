@@ -141,6 +141,41 @@ test('shrinking the window moves the third card to the start of the shelf, even 
   await expect(page.getByRole('button', { name: 'Scroll left' })).toHaveCount(0)
 })
 
+test('two-finger swipe right goes back from a title, and swiping the other way does not', async ({ page }) => {
+  await page.getByRole('button', { name: 'Movies' }).click()
+  await settle(page)
+  await page.locator('[data-tid]').first().click()
+  await expect(page.getByRole('button', { name: 'Back', exact: true })).toBeVisible()
+  await settle(page)
+  await page.mouse.move(700, 400)
+  for (let i = 0; i < 4; i++) await page.mouse.wheel(40, 0) // swipe left: nothing happens
+  await page.waitForTimeout(400)
+  await expect(page.getByRole('button', { name: 'Back', exact: true })).toBeVisible()
+  for (let i = 0; i < 5; i++) { await page.mouse.wheel(-40, 0); await page.waitForTimeout(16) } // swipe right: back
+  await expect(page.getByRole('button', { name: 'Back', exact: true })).toHaveCount(0)
+  // and once more from the list: back to where we came from (Home)
+  await page.waitForTimeout(400)
+  await settle(page)
+  await page.mouse.move(700, 400)
+  for (let i = 0; i < 5; i++) { await page.mouse.wheel(-40, 0); await page.waitForTimeout(16) }
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
+})
+
+test('Watchlist: removing a title takes it off the list and it stays off while Plex still lists it; a refused removal shows why', async ({ page }) => {
+  const card = (t: string) => page.locator('[class*=card]').filter({ hasText: t })
+  await page.getByRole('button', { name: 'Watchlist' }).click()
+  await settle(page)
+  await expect(card('Wanted One')).toBeVisible()
+  await card('Wanted One').getByRole('button', { name: 'Remove from Watchlist' }).click()
+  await expect(card('Wanted One')).toHaveCount(0)
+  await page.waitForTimeout(3200) // the delayed re-read returns it again; it must stay hidden
+  await expect(card('Wanted One')).toHaveCount(0)
+  await page.evaluate(() => { (window as any).__failRemove = true })
+  await card('Wanted Two').getByRole('button', { name: 'Remove from Watchlist' }).click()
+  await expect(page.getByRole('alert')).toContainText('Plex said no')
+  await expect(card('Wanted Two')).toBeVisible()
+})
+
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {
   const heroes = page.getByTestId('continue-hero')
   for (const [width, expected] of [[820, 1], [1360, 2], [1920, 3]] as const) {

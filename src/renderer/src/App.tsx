@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSwipeBack } from './components/useSwipeBack'
 import { flushSync } from 'react-dom'
 import { useQuery } from '@tanstack/react-query'
 import type { MergedTitle } from '@shared/types'
@@ -69,10 +70,21 @@ export function App() {
     })
   }, [])
 
+  /** Views visited before the current one, so a swipe back returns to where you came from. */
+  const trail = useRef<View[]>([])
   const go = (v: View) => {
     if (v === view && !open) return
+    if (v !== view) trail.current.push(view)
     startVT(() => { setOpen(null); setView(v) })
   }
+  useSwipeBack(() => {
+    const player = document.querySelector<HTMLElement>('[data-player]')
+    if (player) { Array.from(player.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Back')?.click(); return }
+    if (palette) { setPalette(false); return }
+    if (openRef.current) { closeTitle(); return }
+    const prev = trail.current.pop()
+    if (prev) startVT(() => setView(prev))
+  })
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => {

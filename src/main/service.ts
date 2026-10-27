@@ -244,7 +244,14 @@ export class Service {
   }
 
   async setWatchlist(ratingKey: string, on: boolean): Promise<void> {
-    if (this.token) await setWatchlist(this.id, this.token, ratingKey, on)
+    if (!this.token) return
+    try {
+      await setWatchlist(this.id, this.token, ratingKey, on)
+      log(`watchlist ${on ? 'add' : 'remove'} ${ratingKey}: ok`)
+    } catch (e) {
+      log(`watchlist ${on ? 'add' : 'remove'} ${ratingKey} failed: ${e instanceof Error ? e.message : String(e)}`)
+      throw e
+    }
   }
 
   /** Re-read watch state of every source of a title from its servers into the cache (after watching/marking). */
