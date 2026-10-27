@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing tag to (re)build, e.g. v1.0.0
+        description: Version tag to build and release, e.g. v1.0.0 (created on the chosen branch if it doesn't exist yet)
         required: true
 
 permissions:
@@ -23,8 +23,6 @@ jobs:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ env.TAG }}
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -55,5 +53,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "Fläx ${TAG#v}" --generate-notes --verify-tag
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --target "$GITHUB_SHA" --title "Fläx ${TAG#v}" --generate-notes
           gh release upload "$TAG" release/Flax-*.zip release/Flax-*.dmg release/SHA256SUMS.txt --clobber
