@@ -1,7 +1,7 @@
 {
   "name": "flax",
   "productName": "Flax",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "private": true,
   "description": "Fläx: all your Plex libraries, merged into one.",
   "main": "./out/main/index.js",
