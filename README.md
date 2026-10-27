@@ -17,7 +17,7 @@ macOS only, by design.
 ## Privacy
 - Your Plex token is stored in the macOS keychain (Electron `safeStorage`) and never leaves the main process; the UI never sees it.
 - Fläx contacts plex.tv, your Plex servers, and api.github.com (update checks). No analytics, no telemetry.
-- Logs stay on your machine (`~/Library/Application Support/Fläx/flax.log`).
+- Logs stay on your machine (`~/Library/Application Support/Flax/flax.log`).
 
 ## Develop
 Needs Node 22+ and pnpm.

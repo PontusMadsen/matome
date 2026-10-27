@@ -49,6 +49,8 @@ jobs:
             pnpm exec electron-builder --mac --publish never -c.mac.identity=null -c.mac.notarize=false
           fi
           ls -la release
+      - name: Smoke test (the app must start before we publish it)
+        run: tools/smoke.sh
       - name: Checksums
         run: cd release && shasum -a 256 Flax-*.zip Flax-*.dmg > SHA256SUMS.txt && cat SHA256SUMS.txt
       - name: Attach to release

@@ -1,17 +1,12 @@
 name: diagnose
-# Builds unsigned arm64 variants of the app and checks which one actually starts.
-# Run manually: Actions -> diagnose -> Run workflow.
+# Builds an unsigned arm64 app and checks that it starts. Run manually: Actions -> diagnose -> Run workflow.
 on:
   workflow_dispatch:
 
 jobs:
   mac:
-    strategy:
-      fail-fast: false
-      matrix:
-        variant: [ascii-name, no-custom-schemes, baseline]
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -23,33 +18,5 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm run build
-      - name: Apply variant
-        run: |
-          case "${{ matrix.variant }}" in
-            ascii-name)
-              node -e "const f=require('fs');const p=JSON.parse(f.readFileSync('package.json'));p.productName='Flax';p.build.productName='Flax';f.writeFileSync('package.json',JSON.stringify(p,null,2))" ;;
-            no-custom-schemes)
-              perl -pi -e 's/\bprotocol\.registerSchemesAsPrivileged\(/void (/' out/main/index.js
-              grep -c "void (" out/main/index.js || true ;;
-          esac
-      - name: Package unsigned
-        run: pnpm exec electron-builder --mac dir --arm64 --publish never -c.mac.identity=null -c.mac.notarize=false
-      - name: Launch the real app for 20 seconds
-        run: |
-          set +e
-          APP="$(ls -d $PWD/release/mac-arm64/*.app)"; echo "app: $APP"
-          rm -rf "$HOME/Library/Application Support/Fl"*
-          EXE="$APP/Contents/MacOS/$(ls "$APP/Contents/MacOS")"
-          ELECTRON_ENABLE_LOGGING=1 ELECTRON_ENABLE_STACK_DUMPING=1 "$EXE" --enable-logging=stderr --v=0 > "$RUNNER_TEMP/app.out" 2>&1 &
-          PID=$!
-          sleep 20
-          if kill -0 $PID 2>/dev/null; then echo "STILL RUNNING after 20s (good)"; kill $PID; else echo "EXITED early"; fi
-          wait $PID; echo "exit code $?"
-          true
-      - name: What the app said
-        if: always()
-        run: |
-          echo "--- app output (last 80 lines)"; tail -80 "$RUNNER_TEMP/app.out" || true
-          echo "--- user data"; ls -la "$HOME/Library/Application Support/"Fl*/ || true
-          echo "--- flax.log"; cat "$HOME/Library/Application Support/"Fl*/flax.log 2>/dev/null | head -40 || true
-          echo "--- crash reports"; ls -t "$HOME/Library/Logs/DiagnosticReports" 2>/dev/null | head -3 || true
+      - run: pnpm exec electron-builder --mac dir --arm64 --publish never -c.mac.identity=null -c.mac.notarize=false
+      - run: tools/smoke.sh

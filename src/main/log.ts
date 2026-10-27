@@ -2,7 +2,7 @@ import { app } from 'electron'
 import { appendFileSync, existsSync, renameSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-/** Append-only diagnostics log (never contains tokens): ~/Library/Application Support/Fläx/flax.log */
+/** Append-only diagnostics log (never contains tokens): ~/Library/Application Support/Flax/flax.log */
 export function log(msg: string): void {
   try {
     const f = join(app.getPath('userData'), 'flax.log')
