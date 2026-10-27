@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ContinueItem, MergedTitle } from '@shared/types'
 import { useContinue, useLibrary } from '../api'
-import { Card, RecentRow, Shelf, SkeletonShelf } from '../components/Grid'
+import { Card, ContinueTile, RecentRow, Shelf, SkeletonShelf } from '../components/Grid'
 import { Icon } from '../components/Icon'
 import { Player, type PlayTarget } from '../components/Player'
 import s from './Page.module.css'
@@ -91,11 +91,11 @@ export function Home({ onOpen }: { onOpen: (t: MergedTitle, el?: HTMLElement | n
         <Shelf title="Continue Watching" hint={cont.refreshing ? undefined : 'across all servers'} busy={cont.refreshing}>
           {rest.map((c) => {
             const t = c.titleId ? byId.get(c.titleId) : undefined
-            return t ? (
+            return (
               <div key={c.key}>
-                <Card t={t} onOpen={(tt, el) => start(c, el)} progress={c.durationMs ? c.viewOffsetMs / c.durationMs : undefined} />
+                {t ? <Card t={t} onOpen={(tt, el) => start(c, el)} progress={c.durationMs ? c.viewOffsetMs / c.durationMs : undefined} /> : <ContinueTile c={c} onOpen={(el) => start(c, el)} />}
               </div>
-            ) : null
+            )
           })}
         </Shelf>
       )}

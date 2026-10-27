@@ -24,31 +24,45 @@ export async function searchDiscover(id: ClientIdentity, token: string, query: s
 }
 
 /**
- * The watchlist lives on the Discover provider (same call python-plexapi's MyPlexAccount.watchlist() makes):
- * includeCollections / includeExternalMedia are part of it, and without them the list can come back empty.
+ * The watchlist lives on the Discover provider (same endpoint python-plexapi's MyPlexAccount.watchlist() uses).
+ * The server pages it (20 per page by default, 201 total in the field), so we walk the pages with container start/size.
+ * Observed against the live service: includeCollections/includeExternalMedia and a size of 300 are answered with HTTP 400,
+ * so the request stays minimal and pages are small. If paging itself is refused we settle for the first page.
  */
 export async function fetchWatchlist(id: ClientIdentity, token: string, note?: (msg: string) => void): Promise<DiscoverItem[]> {
   const url = `${hosts.discover}/library/sections/watchlist/all`
-  // Container paging goes in headers like python-plexapi does (as query params some deployments answer 400). The last
-  // variant is the bare request, so one picky parameter can't take the whole list down.
-  const variants: { name: string; query: Record<string, string>; headers?: Record<string, string> }[] = [
-    { name: 'plexapi', query: { includeCollections: '1', includeExternalMedia: '1' }, headers: { 'X-Plex-Container-Start': '0', 'X-Plex-Container-Size': '300' } },
-    { name: 'bare', query: {} },
-  ]
-  let lastErr: unknown
-  for (const v of variants) {
-    try {
-      const r = await plexFetch<DContainer>(id, url, { token, query: v.query, headers: v.headers, timeoutMs: 20_000 })
-      const metas = r.MediaContainer.Metadata ?? []
-      const items = metas.map(toItem).filter(nonNull).map((i) => ({ ...i, onWatchlist: true }))
-      note?.(`watchlist[${v.name}]: size=${r.MediaContainer.size ?? '?'} total=${r.MediaContainer.totalSize ?? '?'}, ${metas.length} entries, ${items.length} movies/shows (types: ${[...new Set(metas.map((m) => m.type))].join(',') || 'none'})`)
-      if (items.length > 0 || v === variants[variants.length - 1]) return items
-    } catch (e) {
-      lastErr = e
-      note?.(`watchlist[${v.name}] failed: ${e instanceof Error ? e.message : String(e)}`)
-    }
+  const PAGE = 50
+  const page = (start: number, paged: boolean) =>
+    plexFetch<DContainer>(id, url, { token, query: paged ? { 'X-Plex-Container-Start': String(start), 'X-Plex-Container-Size': String(PAGE) } : {}, timeoutMs: 20_000 })
+  const out: DMeta[] = []
+  let first: DContainer
+  let paged = true
+  try {
+    first = await page(0, true)
+  } catch (e) {
+    note?.(`watchlist: paging refused (${e instanceof Error ? e.message : String(e)}); using the first page only`)
+    paged = false
+    first = await page(0, false)
   }
-  throw lastErr instanceof Error ? lastErr : new Error('watchlist failed')
+  out.push(...(first.MediaContainer.Metadata ?? []))
+  const total = first.MediaContainer.totalSize ?? out.length
+  for (let start = out.length; paged && start < total && start < 2000; start = out.length) {
+    const r = await page(start, true).catch((e: unknown) => {
+      note?.(`watchlist: page at ${start} failed: ${e instanceof Error ? e.message : String(e)}`)
+      return null
+    })
+    const metas = r?.MediaContainer.Metadata ?? []
+    if (metas.length === 0) break
+    out.push(...metas)
+  }
+  const seen = new Set<string>()
+  const items = out
+    .map(toItem)
+    .filter(nonNull)
+    .filter((i) => !seen.has(i.ratingKey) && !!seen.add(i.ratingKey))
+    .map((i) => ({ ...i, onWatchlist: true }))
+  note?.(`watchlist: ${items.length} movies/shows of ${total} total (${paged ? 'paged' : 'first page only'})`)
+  return items
 }
 
 export async function setWatchlist(id: ClientIdentity, token: string, ratingKey: string, on: boolean): Promise<void> {

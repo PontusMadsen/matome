@@ -137,4 +137,7 @@ test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and th
     // 4 items in progress: whatever isn't a big card is in the shelf
     await expect(page.getByRole('heading', { name: 'Continue Watching' })).toBeVisible()
   }
+  // Lupin has no merged title in the cache: it must still be reachable from the shelf when it isn't a big card.
+  await page.setViewportSize({ width: 1360, height: 900 })
+  await expect(page.getByTestId('continue-tile').filter({ hasText: 'Lupin' })).toBeVisible()
 })

@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useContextMenu, type MenuItem } from './ContextMenu'
 import { useWatchlist } from '../api'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import type { MergedTitle } from '@shared/types'
+import type { ContinueItem, MergedTitle } from '@shared/types'
 import { Icon } from './Icon'
 import { ScrollbarOverlay } from './ScrollbarOverlay'
 import { useDragScroll } from './useDragScroll'
@@ -58,6 +58,24 @@ export function Card({ t, onOpen, progress, index }: { t: MergedTitle; onOpen?: 
       </div>
       <div className={s.name}>{t.title}</div>
       <div className={s.sub}>{t.year ?? ''}</div>
+    </div>
+  )
+}
+
+/** Continue Watching entry whose merged title isn't in the cache (yet): still shown, straight from what the server reported. */
+export function ContinueTile({ c, onOpen }: { c: ContinueItem; onOpen: (el: HTMLElement) => void }) {
+  const pct = c.durationMs ? c.viewOffsetMs / c.durationMs : 0
+  return (
+    <div className={s.card} title={c.title} tabIndex={0} role="button" onClick={(e) => onOpen(e.currentTarget)} onKeyDown={(e) => e.key === 'Enter' && onOpen(e.currentTarget)} data-testid="continue-tile">
+      <div className={s.poster} data-poster>
+        <Poster urls={c.poster ? [c.poster] : []} title={c.title} />
+        <div className={s.hover}>
+          <span className={s.play}><Icon name="play" size={20} fill /></span>
+        </div>
+        {pct > 0 && <div className={s.bar}><i style={{ width: `${Math.min(100, pct * 100)}%` }} /></div>}
+      </div>
+      <div className={s.name}>{c.title}</div>
+      <div className={s.sub}>{c.subtitle ?? ''}</div>
     </div>
   )
 }
