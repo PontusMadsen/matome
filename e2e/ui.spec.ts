@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
   await page.addInitScript(installMock)
   await page.goto('/index.html')
-  await page.getByRole('button', { name: 'Home' }).waitFor()
+  await page.getByRole('button', { name: 'Home', exact: true }).waitFor()
   await settle(page)
   ;(page as Page & { _errors: string[] })._errors = errors
 })
@@ -174,6 +174,23 @@ test('Watchlist: removing a title takes it off the list and it stays off while P
   await card('Wanted Two').getByRole('button', { name: 'Remove from Watchlist' }).click()
   await expect(page.getByRole('alert')).toContainText('Plex said no')
   await expect(card('Wanted Two')).toBeVisible()
+})
+
+test('a server can be entered from the sidebar and its libraries browsed on their own', async ({ page }) => {
+  await page.locator('nav').getByRole('button', { name: /Friend A/ }).click()
+  await settle(page)
+  await expect(page.getByRole('heading', { name: 'Friend A' })).toBeVisible()
+  const tabs = page.getByRole('tablist', { name: 'Libraries' }).getByRole('tab')
+  await expect(tabs).toHaveCount(2)
+  await expect(tabs.first()).toHaveAttribute('aria-selected', 'true')
+  await expect(page.locator('[data-tid]').first()).toBeVisible()
+  await expect(page.getByRole('combobox', { name: 'Server' })).toHaveCount(0) // already inside one server
+  await tabs.nth(1).click()
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true')
+  // swipe back returns to where we came from
+  await page.mouse.move(700, 400)
+  for (let i = 0; i < 5; i++) { await page.mouse.wheel(-40, 0); await page.waitForTimeout(16) }
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 })
 
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {

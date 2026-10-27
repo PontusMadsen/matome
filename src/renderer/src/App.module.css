@@ -19,6 +19,9 @@
 .spacer { flex: 1; }
 .servers { display: flex; flex-direction: column; gap: 6px; padding: 12px 10px; border-top: 1px solid var(--border); }
 .srv { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.srvbtn { background: none; border: 0; font: inherit; font-size: 12px; text-align: left; width: 100%; padding: 4px 6px; margin: 0 -6px; border-radius: 6px; cursor: pointer; transition: background .15s, color .15s; }
+.srvbtn:hover { background: var(--s2); color: var(--text); }
+.srvon { background: var(--s3); color: var(--text); }
 .srvh { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); margin-bottom: 2px; }
 
 .main { display: flex; flex-direction: column; min-height: 0; min-width: 0; position: relative; }

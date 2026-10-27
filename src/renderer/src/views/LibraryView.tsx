@@ -17,10 +17,14 @@ export function sortTitles(items: MergedTitle[], sort: Sort): MergedTitle[] {
   return c
 }
 
-export function LibraryView({ type, onOpen }: { type: MediaType; onOpen: (t: MergedTitle, el?: HTMLElement | null) => void }) {
+/** `fixedServer` / `fixedLibrary`: browsing one server (and optionally one of its libraries) instead of the merged view. */
+export function LibraryView({ type, onOpen, fixedServer, fixedLibrary }: { type: MediaType; onOpen: (t: MergedTitle, el?: HTMLElement | null) => void; fixedServer?: string; fixedLibrary?: string }) {
   const { data = [], isLoading } = useLibrary(type)
   const [sort, setSort] = useState<Sort>('added')
-  const [server, setServer] = useState('')
+  const [serverSel, setServer] = useState('')
+  const server = fixedServer ?? serverSel
+  const [librarySel, setLibrary] = useState('')
+  const library = fixedLibrary ?? librarySel
   const [genre, setGenre] = useState('')
   const [unwatched, setUnwatched] = useState(false)
   const [jump, setJump] = useState<{ index: number; n: number }>()
@@ -30,18 +34,20 @@ export function LibraryView({ type, onOpen }: { type: MediaType; onOpen: (t: Mer
     for (const t of data) for (const x of t.sources) m.set(x.serverId, x.serverName)
     return [...m]
   }, [data])
+  // Library names offered for the chosen server (all servers when none is chosen).
+  const libraryList = useMemo(() => [...new Set(data.flatMap((t) => t.sources.filter((x) => !server || x.serverId === server).map((x) => x.library)))].sort(), [data, server])
   const filtered = useMemo(
     () =>
       sortTitles(
         data.filter(
           (t) =>
-            (!server || t.sources.some((x) => x.serverId === server)) &&
+            t.sources.some((x) => (!server || x.serverId === server) && (!library || x.library === library)) &&
             (!genre || t.genres.includes(genre)) &&
             (!unwatched || !t.watched),
         ),
         sort,
       ),
-    [data, sort, server, genre, unwatched],
+    [data, sort, server, library, genre, unwatched],
   )
   // First index of each letter when sorted by title (non-letters go under '#').
   const letters = useMemo(() => {
@@ -70,12 +76,22 @@ export function LibraryView({ type, onOpen }: { type: MediaType; onOpen: (t: Mer
             <option key={g}>{g}</option>
           ))}
         </select>
-        <select value={server} onChange={(e) => setServer(e.target.value)} aria-label="Server">
-          <option value="">All servers</option>
-          {serverList.map(([id, name]) => (
-            <option key={id} value={id}>{name}</option>
-          ))}
-        </select>
+        {!fixedServer && (
+          <select value={serverSel} onChange={(e) => { setServer(e.target.value); setLibrary('') }} aria-label="Server">
+            <option value="">All servers</option>
+            {serverList.map(([id, name]) => (
+              <option key={id} value={id}>{name}</option>
+            ))}
+          </select>
+        )}
+        {!fixedLibrary && libraryList.length > 1 && (
+          <select value={librarySel} onChange={(e) => setLibrary(e.target.value)} aria-label="Library">
+            <option value="">All libraries</option>
+            {libraryList.map((l) => (
+              <option key={l}>{l}</option>
+            ))}
+          </select>
+        )}
         <button className={s.toggle} aria-pressed={unwatched} onClick={() => setUnwatched((v) => !v)}>
           <Icon name="eye" size={15} /> Unwatched
         </button>

@@ -1,0 +1,10 @@
+.view { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.head { display: flex; align-items: center; gap: 8px; padding: 0 0 10px; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: 12px; }
+.tabs button { background: var(--s2); border: 1px solid var(--border); color: var(--text-dim); border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 13px; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.tabs button span { color: var(--text-faint); margin-left: 4px; font-size: 12px; }
+.tabs button:hover { background: var(--s3); color: var(--text); }
+.tabs button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.tabs button.on span { color: var(--accent-ink); opacity: .7; }
+.empty { padding: 48px 0; color: var(--text-dim); }
+.empty h3 { color: var(--text); margin: 0 0 6px; }

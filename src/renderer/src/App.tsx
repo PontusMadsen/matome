@@ -14,6 +14,7 @@ import { Search } from './views/Search'
 import { Settings } from './views/Settings'
 import { Watchlist } from './views/Watchlist'
 import { Collections } from './views/Collections'
+import { ServerView } from './views/ServerView'
 import { CommandPalette } from './components/CommandPalette'
 
 const NAV = [
@@ -25,7 +26,7 @@ const NAV = [
   { v: 'Search', icon: 'search' },
   { v: 'Settings', icon: 'settings' },
 ] as const satisfies readonly { v: string; icon: IconName }[]
-type View = (typeof NAV)[number]['v']
+type View = (typeof NAV)[number]['v'] | 'Server'
 
 type VT = { finished: Promise<void> }
 const startVT = (fn: () => void): VT | null => {
@@ -41,6 +42,7 @@ const nameEl = (el: Element | null | undefined, on: boolean) => {
 export function App() {
   const [view, setView] = useState<View>('Home')
   const [open, setOpen] = useState<MergedTitle | null>(null)
+  const [srv, setSrv] = useState<string | null>(null)
   const [auto, setAuto] = useState<AutoPlay | undefined>()
   const upd = useQuery({ queryKey: ['update'], queryFn: () => window.flax.invoke('update:status', undefined), refetchInterval: 5000 })
   const servers = useServers()
@@ -71,11 +73,16 @@ export function App() {
   }, [])
 
   /** Views visited before the current one, so a swipe back returns to where you came from. */
-  const trail = useRef<View[]>([])
+  const trail = useRef<string[]>([])
   const go = (v: View) => {
     if (v === view && !open) return
-    if (v !== view) trail.current.push(view)
+    if (v !== view) trail.current.push(view === 'Server' && srv ? `Server:${srv}` : view)
     startVT(() => { setOpen(null); setView(v) })
+  }
+  const goServer = (id: string) => {
+    if (view === 'Server' && srv === id && !open) return
+    if (view !== 'Server' || srv !== id) trail.current.push(view === 'Server' && srv ? `Server:${srv}` : view)
+    startVT(() => { setOpen(null); setView('Server'); setSrv(id) })
   }
   useSwipeBack(() => {
     const player = document.querySelector<HTMLElement>('[data-player]')
@@ -83,7 +90,9 @@ export function App() {
     if (palette) { setPalette(false); return }
     if (openRef.current) { closeTitle(); return }
     const prev = trail.current.pop()
-    if (prev) startVT(() => setView(prev))
+    if (!prev) return
+    if (prev.startsWith('Server:')) startVT(() => { setSrv(prev.slice(7)); setView('Server') })
+    else startVT(() => setView(prev as View))
   })
 
   useEffect(() => {
@@ -124,7 +133,7 @@ export function App() {
         {/* Horizontal lockup, 124px wide: above the 110px minimum in the brand guidelines. */}
         <img className={s.logo} src={logo} alt="Fläx" draggable={false} />
         <div className={s.navlist}>
-          <div className={`${s.ind} ${open ? s.indoff : ''}`} style={{ '--i': idx } as React.CSSProperties} />
+          <div className={`${s.ind} ${open || view === 'Server' ? s.indoff : ''}`} style={{ '--i': idx } as React.CSSProperties} />
           {NAV.map(({ v, icon }) => (
             <button key={v} className={`${s.nav} ${v === view && !open ? s.active : ''}`} onClick={() => go(v)}>
               <Icon name={icon} />
@@ -137,10 +146,10 @@ export function App() {
         <div className={s.servers}>
           <div className={s.srvh}>Servers</div>
           {(servers.data ?? []).map((sv) => (
-            <div key={sv.id} className={s.srv} title={sv.online ? `${sv.latencyMs} ms` : 'offline'}>
+            <button key={sv.id} className={`${s.srv} ${s.srvbtn} ${view === 'Server' && srv === sv.id && !open ? s.srvon : ''}`} title={sv.online ? `${sv.latencyMs} ms · browse this server` : 'offline'} onClick={() => goServer(sv.id)}>
               <span className={`dot ${sv.online ? 'on' : ''}`} />
               {sv.name}
-            </div>
+            </button>
           ))}
           {servers.data?.length === 0 && <div className={s.srv}>None yet</div>}
         </div>
@@ -160,7 +169,7 @@ export function App() {
         )}
         <div key={view} className={`${s.views} enter`}>
           <header className={s.top}>
-            <h1 className="t-title">{view}</h1>
+            <h1 className="t-title">{view === 'Server' ? (servers.data?.find((x) => x.id === srv)?.name ?? 'Server') : view}</h1>
           </header>
           <div className={s.content}>
             {view === 'Home' && <Home onOpen={openTitle} />}
@@ -169,6 +178,7 @@ export function App() {
             {view === 'Collections' && <Collections onOpen={openTitle} />}
             {view === 'Watchlist' && <Watchlist onOpen={openTitle} />}
             {view === 'Search' && <Search onOpen={openTitle} />}
+            {view === 'Server' && srv && <ServerView id={srv} onOpen={openTitle} />}
             {view === 'Settings' && <Settings />}
           </div>
         </div>
