@@ -1,0 +1,55 @@
+name: diagnose
+# Builds a signed (not notarized) arm64 app and checks that it actually starts. Run manually: Actions -> diagnose -> Run workflow.
+on:
+  workflow_dispatch:
+
+jobs:
+  mac:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    env:
+      CSC_LINK: ${{ secrets.CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm run build
+      - name: Package signed, not notarized
+        run: pnpm exec electron-builder --mac dir --arm64 --publish never -c.mac.notarize=false
+      - name: Signature and entitlements
+        continue-on-error: true
+        run: |
+          APP="release/mac-arm64/Fläx.app"
+          codesign -dvv "$APP" 2>&1 | head -20
+          codesign -d --entitlements - "$APP" 2>&1 | head -30
+          codesign --verify --deep --strict --verbose=2 "$APP" 2>&1 | tail -5
+          find "$APP" -name "*.node" -exec file {} \;
+      - name: Load the database module (as the app does)
+        continue-on-error: true
+        run: |
+          APP="$PWD/release/mac-arm64/Fläx.app"
+          ELECTRON_RUN_AS_NODE=1 "$APP/Contents/MacOS/Fläx" -e "
+            const D = require('$APP/Contents/Resources/app.asar/node_modules/better-sqlite3');
+            const db = new D(':memory:'); console.log('sqlite ok', db.prepare('select sqlite_version() v').get());
+          " 2>&1 | head -30
+      - name: Launch the real app for 20 seconds
+        continue-on-error: true
+        run: |
+          APP="$PWD/release/mac-arm64/Fläx.app"
+          rm -rf "$HOME/Library/Application Support/Fläx"
+          "$APP/Contents/MacOS/Fläx" > "$RUNNER_TEMP/app.out" 2>&1 &
+          PID=$!
+          sleep 20
+          if kill -0 $PID 2>/dev/null; then echo "STILL RUNNING after 20s (good)"; kill $PID; else wait $PID; echo "EXITED early, code $?"; fi
+          echo "--- app output"; head -60 "$RUNNER_TEMP/app.out"
+          echo "--- user data"; ls -la "$HOME/Library/Application Support/Fläx" || true
+          cat "$HOME/Library/Application Support/Fläx/flax.log" 2>/dev/null | head -40
+          echo "--- crash reports"; ls -t "$HOME/Library/Logs/DiagnosticReports" 2>/dev/null | head -3
+          for f in $(ls -t "$HOME"/Library/Logs/DiagnosticReports/*Fl*.ips 2>/dev/null | head -1); do head -c 3000 "$f"; done
