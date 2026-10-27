@@ -10,7 +10,7 @@ export interface SyncStatus {
 // Typed IPC contract. Renderer never sees the Plex token.
 export interface IpcChannels {
   'app:version': { req: void; res: string }
-  'auth:state': { req: void; res: { signedIn: boolean } }
+  'auth:state': { req: void; res: { signedIn: boolean; pending?: boolean; error?: string } }
   'auth:start': { req: void; res: { authUrl: string } }
   'auth:signOut': { req: void; res: void }
   'servers:list': { req: void; res: ServerInfo[] }

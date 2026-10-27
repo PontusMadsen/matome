@@ -9,7 +9,7 @@ type Handlers = { [C in IpcChannel]: (req: IpcChannels[C]['req']) => Promise<Ipc
 export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
   const handlers: Handlers = {
     'app:version': () => app.getVersion(),
-    'auth:state': () => ({ signedIn: svc.signedIn }),
+    'auth:state': () => ({ signedIn: svc.signedIn, pending: svc.loginPending, error: svc.loginError ?? undefined }),
     'auth:start': () => svc.startLogin(),
     'auth:signOut': () => svc.signOut(),
     'servers:list': () => svc.servers(),

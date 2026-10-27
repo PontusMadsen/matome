@@ -1,5 +1,5 @@
 import { authAppUrl, pinsUrl, pinUrl } from './endpoints'
-import { plexFetch, type ClientIdentity } from './client'
+import { plexFetch, PlexError, type ClientIdentity } from './client'
 
 interface Pin {
   id: number
@@ -31,8 +31,13 @@ export async function pollPin(
 ): Promise<string> {
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
-    const t = await checkPin(id, pinId)
-    if (t) return t
+    try {
+      const t = await checkPin(id, pinId)
+      if (t) return t
+    } catch (e) {
+      // 404 = the code expired or was never valid; anything else (network blip, 5xx) is worth another try.
+      if (e instanceof PlexError && e.status === 404) throw new Error('Sign-in code expired. Try again.', { cause: e })
+    }
     await new Promise((r) => setTimeout(r, intervalMs))
   }
   throw new Error('PIN login timed out')

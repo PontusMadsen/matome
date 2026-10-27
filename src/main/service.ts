@@ -56,14 +56,37 @@ export class Service {
     return this.token !== null
   }
 
+  /** Why the last sign-in attempt failed, or null; shown in Settings. */
+  loginError: string | null = null
+  loginPending = false
+
   async startLogin(): Promise<{ authUrl: string }> {
-    const pin = await startPin(this.id)
+    this.loginError = null
+    const pin = await startPin(this.id).catch((e: unknown) => {
+      this.loginError = `Could not start sign-in: ${e instanceof Error ? e.message : String(e)}`
+      log(this.loginError)
+      throw e
+    })
     void shell.openExternal(pin.authUrl)
-    void pollPin(this.id, pin.id).then((t) => {
-      this.token = t
-      saveToken(t)
-      return this.refresh()
-    }).catch(() => undefined)
+    this.loginPending = true
+    void pollPin(this.id, pin.id)
+      .then((t) => {
+        this.token = t
+        try {
+          saveToken(t)
+        } catch (e) {
+          // Stay signed in for this session, but say why it won't survive a restart.
+          this.loginError = `Signed in, but the token could not be saved to the keychain: ${e instanceof Error ? e.message : String(e)}`
+          log(this.loginError)
+        }
+        log('sign-in: token received')
+        return this.refresh()
+      })
+      .catch((e: unknown) => {
+        this.loginError = e instanceof Error ? e.message : String(e)
+        log(`sign-in failed: ${this.loginError}`)
+      })
+      .finally(() => { this.loginPending = false })
     return { authUrl: pin.authUrl }
   }
 

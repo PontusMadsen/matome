@@ -88,7 +88,7 @@ export function Settings() {
             <div className={s.row}>
               <div className={s.grow}>
                 <div className={s.label}>Not signed in</div>
-                <div className={s.hint}>A browser window opens; approve Fläx there, then come back.</div>
+                <div className={`${s.hint} ${auth?.error ? s.err : ''}`}>{auth?.error ?? (auth?.pending ? 'Waiting for you to approve in the browser…' : 'A browser window opens; approve Fläx there, then come back.')}</div>
               </div>
               <button className="btn btn-primary" onClick={() => void window.flax.invoke('auth:start', undefined)}>Sign in with Plex</button>
             </div>
