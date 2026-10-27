@@ -1,0 +1,5 @@
+.track { position: absolute; top: 4px; bottom: 4px; right: 2px; width: 16px; z-index: 6; display: flex; justify-content: flex-end; }
+.thumb { width: 5px; margin-right: 3px; border-radius: 4px; background: var(--text); opacity: 0.22; transition: width 140ms var(--ease), opacity 160ms var(--ease), margin 140ms var(--ease); cursor: grab; }
+.track:hover .thumb, .awake .thumb { opacity: 0.45; }
+.track:hover .thumb { width: 9px; margin-right: 1px; opacity: 0.6; }
+.drag .thumb { width: 9px; margin-right: 1px; opacity: 0.8; cursor: grabbing; }

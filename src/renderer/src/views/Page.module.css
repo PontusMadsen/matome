@@ -1,0 +1,23 @@
+.page { overflow: auto; height: 100%; margin: 0 -32px; padding: 0 32px 40px; }
+.hero { position: relative; height: 320px; border-radius: var(--r-lg); overflow: hidden; margin-bottom: 32px; background: var(--s2); box-shadow: 0 0 0 1px var(--border) inset; }
+.heroimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; animation: kenburns 28s ease-in-out infinite alternate; transform-origin: 70% 40%; }
+.herobody > * { animation: enter 520ms var(--ease) backwards; }
+.herobody > *:nth-child(2) { animation-delay: 60ms; } .herobody > *:nth-child(3) { animation-delay: 110ms; } .herobody > *:nth-child(4) { animation-delay: 160ms; } .herobody > *:nth-child(5) { animation-delay: 210ms; }
+.heroshade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(14,17,22,.94) 0%, rgba(14,17,22,.7) 40%, rgba(14,17,22,.1) 100%), linear-gradient(0deg, rgba(14,17,22,.7), transparent 45%); }
+.herobody { position: absolute; left: 32px; bottom: 28px; max-width: 520px; display: flex; flex-direction: column; gap: 10px; }
+.kicker { font-size: 11.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); font-weight: 650; }
+.herobar { height: 4px; border-radius: 2px; background: rgba(255,255,255,.2); width: 260px; overflow: hidden; }
+.herobar > i { display: block; height: 100%; background: var(--accent); }
+.actions { display: flex; gap: 10px; margin-top: 4px; }
+.wrap { display: flex; flex-wrap: wrap; gap: 20px 16px; }
+.wrap > * { width: 156px; }
+.sec { margin: 24px 0 12px; }
+.input-lg { height: 44px; width: min(560px, 100%); padding: 0 16px 0 42px; font-size: 15px; border-radius: var(--r-md); }
+.searchbox { position: relative; width: min(560px, 100%); margin-bottom: 8px; }
+.searchbox svg { position: absolute; left: 14px; top: 13px; color: var(--text-faint); }
+.list { display: flex; flex-direction: column; gap: 6px; }
+.listitem { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--r-md); background: var(--s1); border: 1px solid var(--border); cursor: pointer; }
+.listitem:hover { background: var(--s2); border-color: var(--border-strong); }
+.thumbsm { width: 40px; height: 60px; border-radius: 4px; background: var(--s3); object-fit: cover; flex: none; }
+.empty { padding: 56px 0; text-align: center; color: var(--text-dim); }
+.empty h3 { color: var(--text); font-size: 17px; margin-bottom: 6px; }

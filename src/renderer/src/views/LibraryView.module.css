@@ -1,0 +1,9 @@
+.view { display: flex; flex-direction: column; height: 100%; min-height: 0; gap: 16px; }
+.bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.count { color: var(--text-dim); margin-right: auto; font-variant-numeric: tabular-nums; }
+.toggle { all: unset; box-sizing: border-box; height: 34px; padding: 0 14px; display: inline-flex; align-items: center; gap: 8px; border-radius: var(--r-sm); background: var(--s2); border: 1px solid var(--border); cursor: pointer; color: var(--text-dim); font-weight: 500; }
+.toggle:hover { border-color: var(--border-strong); color: var(--text); }
+.toggle[aria-pressed='true'] { background: var(--accent-soft); border-color: rgba(45,212,191,.45); color: var(--accent); }
+.empty { color: var(--text-dim); padding: 48px 0; text-align: center; }
+.empty h3 { font-size: 17px; margin-bottom: 6px; color: var(--text); }
+.skel { display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr)); gap: 20px 16px; }

@@ -1,0 +1,15 @@
+.scrim { animation: fade 160ms var(--ease) both; position: fixed; inset: 0; z-index: 150; background: rgba(5,6,8,.55); backdrop-filter: blur(6px); display: flex; justify-content: center; padding-top: 14vh; }
+.box { width: min(620px, calc(100vw - 48px)); align-self: flex-start; background: var(--s2); border: 1px solid var(--border-strong); border-radius: var(--r-lg); box-shadow: var(--shadow-2); overflow: hidden; }
+.field { display: flex; align-items: center; gap: 12px; padding: 0 18px; height: 56px; color: var(--text-faint); }
+.field input { flex: 1; background: none; border: 0; outline: 0; color: var(--text); font: inherit; font-size: 17px; user-select: text; }
+.field input::placeholder { color: var(--text-faint); }
+kbd { font: inherit; font-size: 11px; padding: 2px 6px; border-radius: 4px; background: var(--s3); color: var(--text-dim); border: 1px solid var(--border); }
+.results { border-top: 1px solid var(--border); max-height: 52vh; overflow: auto; padding: 6px; }
+.item { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 12px; width: 100%; padding: 6px 10px; border-radius: var(--r-md); cursor: pointer; }
+.item img, .ph { width: 34px; height: 51px; border-radius: 4px; object-fit: cover; background: var(--s3); flex: none; }
+.sel { background: var(--s4); }
+.name { flex: 1; font-weight: 550; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sub { color: var(--text-dim); font-size: 12.5px; }
+.none, .more { padding: 14px 12px; color: var(--text-dim); font-size: 13px; }
+.all { color: var(--text-dim); border-top: 1px solid var(--border); border-radius: 0 0 var(--r-md) var(--r-md); margin-top: 4px; height: 40px; }
+.all:hover { background: var(--s3); color: var(--text); }

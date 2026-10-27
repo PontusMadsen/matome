@@ -1,0 +1,4 @@
+.menu { transform-origin: top left; animation: pop 130ms var(--ease) both; position: fixed; z-index: 200; min-width: 190px; padding: 5px; background: var(--s3); border: 1px solid var(--border-strong); border-radius: var(--r-md); box-shadow: var(--shadow-2); }
+.item { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 7px 10px; border-radius: var(--r-sm); cursor: pointer; font-size: 13.5px; }
+.item:hover, .item:focus-visible { background: var(--accent); color: var(--accent-ink); }
+.danger { color: var(--bad); }

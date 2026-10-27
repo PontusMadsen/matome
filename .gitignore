@@ -1,0 +1,12 @@
+node_modules/
+dist/
+out/
+release/
+.env
+*.log
+.DS_Store
+.plex-token
+.deps-stamp
+.build-stamp
+test-results/
+playwright-report/

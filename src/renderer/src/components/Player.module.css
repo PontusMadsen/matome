@@ -1,0 +1,46 @@
+.overlay { animation: fade 240ms var(--ease) both; position: fixed; inset: 0; background: #000; z-index: 100; display: flex; flex-direction: column; user-select: none; }
+.video { flex: 1; min-height: 0; width: 100%; background: #000; outline: none; }
+.hidecursor { cursor: none; }
+
+.top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 10px; padding: 36px 24px 36px; background: linear-gradient(rgba(0,0,0,.78), transparent); transition: opacity 240ms var(--ease), transform 240ms var(--ease); z-index: 3; }
+.title { font-size: 16px; font-weight: 600; margin-right: auto; text-shadow: 0 1px 8px rgba(0,0,0,.6); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.err { color: var(--bad); background: rgba(0,0,0,.65); padding: 4px 10px; border-radius: var(--r-sm); font-size: 13px; max-width: 460px; }
+.bottom { position: absolute; left: 0; right: 0; bottom: 0; padding: 56px 28px 22px; background: linear-gradient(transparent, rgba(0,0,0,.85)); transition: opacity 240ms var(--ease), transform 240ms var(--ease); z-index: 3; display: flex; flex-direction: column; gap: 6px; }
+.hide { opacity: 0; pointer-events: none; }
+.top.hide { transform: translateY(-8px); }
+.bottom.hide { transform: translateY(8px); }
+
+/* Scrubber: tall hit area for pen use; track grows on hover/drag */
+.scrub { position: relative; height: 30px; display: flex; align-items: center; cursor: pointer; touch-action: none; }
+.track { position: relative; width: 100%; height: 5px; border-radius: 3px; background: rgba(255,255,255,.22); transition: height 120ms var(--ease); }
+.scrub:hover .track, .scrubbing .track { height: 9px; }
+.buf { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: rgba(255,255,255,.28); }
+.fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--accent); }
+.knob { position: absolute; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,.6); transform: scale(0); transition: transform 120ms var(--ease); }
+.scrub:hover .knob, .scrubbing .knob { transform: scale(1); }
+.tip { position: absolute; bottom: 30px; transform: translateX(-50%); padding: 3px 8px; border-radius: 5px; background: rgba(20,22,26,.95); border: 1px solid var(--border-strong); font-size: 12.5px; font-variant-numeric: tabular-nums; pointer-events: none; }
+
+.row { display: flex; align-items: center; gap: 6px; }
+.ctl { all: unset; box-sizing: border-box; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: #fff; transition: background 120ms var(--ease), transform 120ms var(--ease); }
+.ctl:hover { background: rgba(255,255,255,.14); }
+.ctl:active { transform: scale(.92); }
+.ctl:focus-visible { outline: 2px solid var(--accent); }
+.play { width: 52px; height: 52px; background: var(--accent); color: var(--accent-ink); }
+.play:hover { background: var(--accent-hover); }
+.time { font-variant-numeric: tabular-nums; font-size: 13.5px; color: rgba(255,255,255,.9); margin: 0 10px; white-space: nowrap; }
+.grow { flex: 1; }
+.vol { display: flex; align-items: center; gap: 2px; }
+.volslider { width: 84px; accent-color: var(--accent); height: 24px; }
+.pill { height: 34px; background-color: rgba(30,32,38,.85); border: 1px solid var(--border-strong); backdrop-filter: blur(10px); color: #fff; }
+
+.flash { position: absolute; left: 50%; top: 50%; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; display: grid; place-items: center; pointer-events: none; animation: flash 520ms var(--ease) both; z-index: 2; }
+@keyframes flash { from { opacity: 1; transform: scale(.8); } to { opacity: 0; transform: scale(1.35); } }
+.spin { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; border: 3px solid rgba(255,255,255,.25); border-top-color: var(--accent); animation: spin 800ms linear infinite; pointer-events: none; z-index: 2; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.skip { position: absolute; right: 28px; bottom: 150px; z-index: 4; display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; border-radius: 23px; background: rgba(240,240,244,.95); color: #111; font-weight: 650; font-size: 14.5px; border: 0; cursor: pointer; box-shadow: var(--shadow-2); animation: pop 240ms var(--ease) both; transition: bottom 240ms var(--ease), background 120ms; }
+.skip:hover { background: #fff; }
+.skipLow { bottom: 36px; }
+
+/* In-player subtitles (TextTrack cues) */
+.video::cue { background-color: rgba(0, 0, 0, 0.68); color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; font-size: 1.6vw; line-height: 1.3; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); }

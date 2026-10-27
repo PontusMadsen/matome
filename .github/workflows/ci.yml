@@ -1,0 +1,40 @@
+name: ci
+# Cheap Linux checks on every push: types, lint, unit tests, build, and UI regression tests against a mocked bridge.
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      # better-sqlite3 needs its native binary for the vitest run (the Electron rebuild happens only in the mac job).
+      - run: pnpm rebuild better-sqlite3
+      - run: pnpm run typecheck
+      - run: pnpm run lint
+      - run: pnpm run test
+      - run: pnpm run build
+      - name: Cache Playwright browser
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      # No --with-deps: the apt step took ~11 minutes; ubuntu-latest already has Chromium's runtime libraries.
+      - run: pnpm exec playwright install chromium
+      - run: pnpm exec playwright test
+        env:
+          CI: 'true'
