@@ -21,7 +21,7 @@
 
 .shelf { margin-bottom: 28px; }
 .shelfhead { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
-.shelfrow { display: flex; gap: 16px; overflow-x: auto; padding: 4px 32px 14px 4px; margin: 0 -32px 0 -4px; scroll-padding-left: 4px; scroll-snap-type: x proximity; }
+.shelfrow { display: flex; gap: 16px; overflow-x: auto; padding: 4px 32px 14px 4px; margin: 0 -32px 0 -4px; scroll-padding-left: 4px; scroll-snap-type: x proximity; overflow-anchor: none; }
 .shelfrow > * { flex: none; width: 156px; scroll-snap-align: start; }
 .skelrow { display: flex; gap: 16px; }
 

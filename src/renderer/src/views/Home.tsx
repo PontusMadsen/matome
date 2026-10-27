@@ -88,7 +88,7 @@ export function Home({ onOpen }: { onOpen: (t: MergedTitle, el?: HTMLElement | n
           : heroes.map((c, i) => renderHero(c, i === 0))}
       </div>
       {rest.length > 0 && (
-        <Shelf title="Continue Watching" hint={cont.refreshing ? undefined : 'across all servers'} busy={cont.refreshing}>
+        <Shelf title="Continue Watching" resetKey={rest[0]?.key} hint={cont.refreshing ? undefined : 'across all servers'} busy={cont.refreshing}>
           {rest.map((c) => {
             const t = c.titleId ? byId.get(c.titleId) : undefined
             return (

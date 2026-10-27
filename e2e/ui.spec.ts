@@ -129,6 +129,18 @@ test('closing the player reports the stop position, then refreshes Continue Watc
   expect(order.indexOf('play:timeline:stopped')).toBeLessThan(order.indexOf('home:continue:refresh:'))
 })
 
+test('shrinking the window moves the third card to the start of the shelf, even if the shelf was scrolled', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 900 })
+  await expect(page.getByTestId('continue-hero')).toHaveCount(3)
+  const row = page.locator('section', { has: page.getByRole('heading', { name: 'Continue Watching' }) }).locator('[class*=shelfrow]')
+  await row.evaluate((el) => { el.scrollLeft = 300 })
+  expect(await row.evaluate((el) => el.scrollLeft)).toBeGreaterThan(100)
+  await page.setViewportSize({ width: 1360, height: 900 })
+  await expect(page.getByTestId('continue-hero')).toHaveCount(2)
+  await expect.poll(() => row.evaluate((el) => el.scrollLeft)).toBeLessThan(5)
+  await expect(page.getByRole('button', { name: 'Scroll left' })).toHaveCount(0)
+})
+
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {
   const heroes = page.getByTestId('continue-hero')
   for (const [width, expected] of [[820, 1], [1360, 2], [1920, 3]] as const) {

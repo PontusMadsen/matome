@@ -126,9 +126,11 @@ export function PosterGrid({ items, onOpen, jumpTo }: { items: MergedTitle[]; on
   )
 }
 
-export function Shelf({ title, hint, busy, children }: { title: string; hint?: string; busy?: boolean; children: ReactNode }) {
+/** `resetKey`: when it changes (e.g. a different first item) the row jumps back to its start so nothing is hidden off to the left. */
+export function Shelf({ title, hint, busy, resetKey, children }: { title: string; hint?: string; busy?: boolean; resetKey?: string; children: ReactNode }) {
   const row = useRef<HTMLDivElement>(null)
   useDragScroll(row)
+  useEffect(() => { if (row.current) row.current.scrollLeft = 0 }, [resetKey])
   const [edge, setEdge] = useState({ start: true, end: false })
   const update = () => {
     const el = row.current
