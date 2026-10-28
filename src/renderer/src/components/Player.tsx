@@ -329,7 +329,9 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
   }
   const onEnded = () => {
     markAll()
-    target.onNext?.()
+    // Next episode if there is one; otherwise (a movie, or the last episode) go back to the screen we came from.
+    if (target.onNext) target.onNext()
+    else onClose()
   }
 
   const toggle = useCallback(() => {

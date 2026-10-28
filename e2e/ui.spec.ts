@@ -193,6 +193,15 @@ test('a server can be entered from the sidebar and its libraries browsed on thei
   await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 })
 
+test('when playback ends with nothing next, the player closes and returns to the previous screen', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 900 })
+  await page.getByTestId('continue-tile').filter({ hasText: 'Lupin' }).click() // no next episode known for this one
+  await expect(page.locator('[data-player]')).toBeVisible()
+  await page.locator('[data-player] video').evaluate((v) => v.dispatchEvent(new Event('ended')))
+  await expect(page.locator('[data-player]')).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
+})
+
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {
   const heroes = page.getByTestId('continue-hero')
   for (const [width, expected] of [[820, 1], [1360, 2], [1920, 3]] as const) {
