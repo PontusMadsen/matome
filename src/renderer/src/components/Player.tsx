@@ -150,7 +150,20 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
     const offset = Math.floor(safeStartMs(resumeMs.current, target.durationMs ?? 0) / 1000) * 1000
     base.current = offset
     // Once the stream is actually playing, learn whether its clock includes the offset (see detectBase).
-    const onPlaying = () => { base.current = detectBase(offset, el.currentTime); busyRetries.current = 0; applyCuesRef.current() }
+    // Unless a stream track was picked from the menu, nothing the stream turns on by itself (default/forced tracks) may show.
+    const logged = new Set<string>()
+    const quiet = () => {
+      if (feedSubRef.current !== undefined) return
+      for (let i = 0; i < el.textTracks.length; i++) {
+        const t = el.textTracks[i]!
+        if (t === track.current || t.mode === 'disabled') continue
+        t.mode = 'disabled'
+        const k = `${t.kind}/${t.label || '-'}/${t.language || '-'}`
+        if (!logged.has(k)) { logged.add(k); void window.flax.invoke('app:log', { msg: `subtitles: switched off a track the stream turned on by itself (${k})` }) }
+      }
+    }
+    el.textTracks.addEventListener('addtrack', quiet)
+    const onPlaying = () => { base.current = detectBase(offset, el.currentTime); busyRetries.current = 0; applyCuesRef.current(); quiet() }
     el.addEventListener('playing', onPlaying, { once: true })
     setWaiting(true)
     if (liveServer.current && liveServer.current !== src.serverId) {
@@ -198,8 +211,10 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
             if (srcIdx + 1 < target.sources.length) setSrcIdx((i) => i + 1)
             else setError(`Playback failed on ${src.serverName}: ${detail}`)
           })
-          h.subtitleDisplay = true
+          h.subtitleDisplay = false // only turned on when a stream track is picked in the menu
+          h.subtitleTrack = -1
           h.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, (_e, d) => {
+            quiet()
             setFeedSubs(d.subtitleTracks.map((t, i) => ({ index: i, name: t.name || t.lang || `Track ${i + 1}` })))
             setFeedSub((cur) => (cur !== undefined && cur < d.subtitleTracks.length ? cur : undefined))
           })
@@ -210,7 +225,8 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
           h.loadSource(url)
           h.attachMedia(el)
           h.on(Hls.Events.MANIFEST_PARSED, () => { el.playbackRate = rate; void el.play() })
-          h.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => { h.subtitleTrack = feedSubRef.current ?? -1 })
+          h.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => { h.subtitleTrack = feedSubRef.current ?? -1; if (feedSubRef.current === undefined) h.subtitleDisplay = false; quiet() })
+          h.on(Hls.Events.SUBTITLE_TRACK_SWITCH, quiet)
         } else {
           el.src = url
           void el.play()
@@ -220,6 +236,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
     return () => {
       cancelled = true
       el.removeEventListener('playing', onPlaying)
+      el.textTracks.removeEventListener('addtrack', quiet)
 
       hls.current?.destroy()
       hls.current = null

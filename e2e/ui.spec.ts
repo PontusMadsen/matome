@@ -202,6 +202,19 @@ test('when playback ends with nothing next, the player closes and returns to the
   await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible()
 })
 
+test('player: a subtitle track the stream switches on by itself is switched off again', async ({ page }) => {
+  await page.getByRole('button', { name: /Resume/ }).first().click()
+  await expect(page.locator('[data-player]')).toBeVisible()
+  await page.waitForTimeout(300)
+  const mode = await page.locator('[data-player] video').evaluate(async (v: HTMLVideoElement) => {
+    const t = v.addTextTrack('subtitles', 'Forced', 'en')
+    t.mode = 'showing' // what a default/forced HLS track does
+    await new Promise((r) => setTimeout(r, 100))
+    return t.mode
+  })
+  expect(mode).toBe('disabled')
+})
+
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {
   const heroes = page.getByTestId('continue-hero')
   for (const [width, expected] of [[820, 1], [1360, 2], [1920, 3]] as const) {
