@@ -28,7 +28,7 @@ export function Card({ t, onOpen, progress, index }: { t: MergedTitle; onOpen?: 
   // Movies: watched = watched anywhere. Shows: "unwatched" if any episode is left.
   const isWatched = t.type === 'movie' ? t.watched : t.unwatchedCount === 0
   const wl = useWatchlist().data
-  const { onContextMenu, menu } = useContextMenu(() => {
+  const { onContextMenu, openMenu, menu } = useContextMenu(() => {
     const onList = wl?.find((d) => d.availableAs === t.id)
     const items: MenuItem[] = [
     { label: 'Open', onSelect: () => onOpen?.(t) },
@@ -37,11 +37,12 @@ export function Card({ t, onOpen, progress, index }: { t: MergedTitle; onOpen?: 
       onSelect: () => void window.flax.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => qc.invalidateQueries({ queryKey: ['library'] })),
     },
     ]
-    if (onList)
-      items.push({
-        label: 'Remove from Watchlist',
-        onSelect: () => void window.flax.invoke('watchlist:set', { ratingKey: onList.ratingKey, on: false }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['watchlist'] }), qc.invalidateQueries({ queryKey: ['search'] })])),
-      })
+    const refresh = () => Promise.all([qc.invalidateQueries({ queryKey: ['watchlist'] }), qc.invalidateQueries({ queryKey: ['search'] })])
+    items.push(
+      onList
+        ? { label: 'Remove from Watchlist', onSelect: () => void window.flax.invoke('watchlist:set', { ratingKey: onList.ratingKey, on: false }).then(refresh).catch((e: Error) => window.alert(e.message)) }
+        : { label: 'Add to Watchlist', onSelect: () => void window.flax.invoke('title:addToWatchlist', { id: t.id }).then(refresh).catch((e: Error) => window.alert(e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, ''))) },
+    )
     return items
   })
   return (
@@ -52,6 +53,7 @@ export function Card({ t, onOpen, progress, index }: { t: MergedTitle; onOpen?: 
         <div className={s.hover}>
           <span className={s.play}><Icon name="play" size={20} fill /></span>
         </div>
+        <button className={s.more} aria-label={`More for ${t.title}`} title="More" onClick={openMenu} onKeyDown={(e) => e.stopPropagation()}><Icon name="more" size={16} fill /></button>
         {t.unwatchedCount > 0 && <span className={s.pill} title={`${t.unwatchedCount} unwatched episode${t.unwatchedCount > 1 ? 's' : ''}`}>{t.unwatchedCount}</span>}
         {t.type === 'movie' && t.watched && <span className={s.seen} title="Watched"><Icon name="check" size={13} /></span>}
         {progress !== undefined && progress > 0 && <div className={s.bar}><i style={{ width: `${Math.min(100, progress * 100)}%` }} /></div>}

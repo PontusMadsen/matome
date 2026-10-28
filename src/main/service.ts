@@ -7,14 +7,14 @@ import { syncAll, type ServerSyncStatus } from './sync'
 import { getItem, loadItems, upsertItems, type Db } from './db'
 import { applyLive } from './live'
 import { loadSettings, saveSettings } from './settings'
-import { mergeItems } from './merge'
+import { mergeItems, normTitle } from './merge'
 import { createHash, randomUUID } from 'node:crypto'
 import { log, scrub } from './log'
 import { looksLikeSubtitles, subtitleCandidates } from '@shared/subtitles'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fetchDetail, fetchEpisodes, fetchSeasons, toDetailPart } from './plex/detail'
-import { transcodeStartPath, timelinePath, scrobblePath, unscrobblePath, ratePath, selectStreamsPath, stopSessionPath } from './plex/playback'
+import { subtitleChoice, transcodeStartPath, timelinePath, scrobblePath, unscrobblePath, ratePath, selectStreamsPath, stopSessionPath } from './plex/playback'
 import { findMpv, MpvSession } from './mpv/session'
 import { addToPlaylistPath, createPlaylistPath, collectionChildrenPath, fetchCollections, fetchItemKeys, fetchPlaylists, itemUri, playlistItemsPath } from './plex/collections'
 import { listSections, patchWatchState } from './plex/library'
@@ -243,6 +243,31 @@ export class Service {
     return annotateAvailability(items, this.all())
   }
 
+  /** Add a title that is on our servers to the Plex Watchlist: find it on Discover first (local keys differ from Discover's). */
+  async addTitleToWatchlist(id: string): Promise<void> {
+    if (!this.token) throw new Error('Sign in first')
+    const t = this.find(id)
+    const found = await searchDiscover(this.id, this.token, t.title)
+    const same = (y?: number) => t.year === undefined || y === undefined || Math.abs(t.year - y) <= 1
+    const hit = found.find((d) => d.type === t.type && normTitle(d.title) === normTitle(t.title) && same(d.year))
+    if (!hit) throw new Error(`Could not find "${t.title}" on Plex Discover`)
+    await this.setWatchlist(hit.ratingKey, true)
+  }
+
+  /** Where playback should resume: the furthest saved position over all servers holding the item, read fresh (a server we last streamed from may not be the first in line). */
+  async resumePoint(sources: { serverId: string; ratingKey: string }[]): Promise<number> {
+    const slow = <T>(p: Promise<T>, fallback: T) => Promise.race([p.catch(() => fallback), new Promise<T>((r) => setTimeout(() => r(fallback), 3000))])
+    const each = await Promise.all(
+      sources.map(async (x) => {
+        const info = this.infos.find((i) => i.id === x.serverId)
+        const cred = this.creds.get(x.serverId)
+        if (!info?.baseUrl || !info.online || !cred) return 0
+        return slow(fetchDetail(this.id, info, cred.accessToken, x.ratingKey).then((d) => d.viewOffset ?? 0), 0)
+      }),
+    )
+    return Math.max(0, ...each)
+  }
+
   async setWatchlist(ratingKey: string, on: boolean): Promise<void> {
     if (!this.token) return
     try {
@@ -453,8 +478,9 @@ export class Service {
   async playStart(r: PlayRequest): Promise<{ url: string; session: string }> {
     const session = r.session ?? randomUUID()
     // Stream choice is stored on the server's media part; the transcoder reads it from there.
-    if (r.partId !== undefined && (r.audioStreamId !== undefined || r.subtitleStreamId !== undefined)) {
-      await this.write(r.serverId, 'PUT', selectStreamsPath(r.partId, r.audioStreamId, r.subtitleStreamId)).catch((e: unknown) =>
+    const subtitleStreamId = subtitleChoice(r.subtitleStreamId, r.partId)
+    if (r.partId !== undefined && (r.audioStreamId !== undefined || subtitleStreamId !== undefined)) {
+      await this.write(r.serverId, 'PUT', selectStreamsPath(r.partId, r.audioStreamId, subtitleStreamId)).catch((e: unknown) =>
         log(`select streams failed on ${r.serverId}: ${e instanceof Error ? e.message : String(e)}`),
       )
     }

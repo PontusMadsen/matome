@@ -215,6 +215,33 @@ test('player: a subtitle track the stream switches on by itself is switched off 
   expect(mode).toBe('disabled')
 })
 
+test('cards have a visible ⋮ menu with mark watched and watchlist', async ({ page }) => {
+  await page.getByRole('button', { name: 'Movies' }).click()
+  await settle(page)
+  await page.locator('[data-tid]').first().getByRole('button', { name: /^More for/ }).click()
+  await expect(page.getByRole('menuitem', { name: /Mark as (un)?watched/ })).toBeVisible()
+  await page.getByRole('menuitem', { name: 'Add to Watchlist' }).click()
+  const calls = await page.evaluate(() => (window as any).__calls.map((c: any) => c.c) as string[])
+  expect(calls).toContain('title:addToWatchlist')
+})
+
+test('episodes have a ⋮ menu too', async ({ page }) => {
+  await page.getByRole('button', { name: 'TV Shows' }).click()
+  await settle(page)
+  await page.locator('[data-tid]').first().click()
+  await page.getByRole('button', { name: /^More for episode/ }).first().waitFor()
+  await page.getByRole('button', { name: /^More for episode/ }).first().click()
+  await expect(page.getByRole('menuitem', { name: 'Play' })).toBeVisible()
+  await expect(page.getByRole('menuitem', { name: /Mark as (un)?watched/ })).toBeVisible()
+})
+
+test('playback starts from the furthest position any server has, not the first one\'s', async ({ page }) => {
+  await page.evaluate(() => { (window as any).__resume = 754_000 })
+  await page.getByRole('button', { name: /Resume/ }).first().click()
+  await expect(page.locator('[data-player]')).toBeVisible()
+  await expect.poll(() => page.evaluate(() => (window as any).__calls.find((c: any) => c.c === 'play:start')?.r?.offsetMs)).toBe(754_000)
+})
+
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {
   const heroes = page.getByTestId('continue-hero')
   for (const [width, expected] of [[820, 1], [1360, 2], [1920, 3]] as const) {

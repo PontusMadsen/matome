@@ -20,6 +20,7 @@ const P: Record<string, string> = {
   rew: 'M4 12a8 8 0 1 0 3-6.2M4 4v4h4',
   fwd: 'M20 12a8 8 0 1 1-3-6.2M20 4v4h-4',
   next: 'M5 5l10 7-10 7zM18 5v14',
+  more: 'M12 6.7a1.7 1.7 0 1 0 0-3.4 1.7 1.7 0 0 0 0 3.4zM12 13.7a1.7 1.7 0 1 0 0-3.4 1.7 1.7 0 0 0 0 3.4zM12 20.7a1.7 1.7 0 1 0 0-3.4 1.7 1.7 0 0 0 0 3.4z',
 }
 
 export type IconName = keyof typeof P

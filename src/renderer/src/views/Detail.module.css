@@ -50,3 +50,5 @@
 .seen { color: var(--ok); display: inline-flex; }
 .eprog { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,.2); }
 .eprog > i { display: block; height: 100%; background: var(--accent); }
+.epmore { width: 30px; height: 30px; border-radius: 50%; border: 0; background: transparent; color: var(--text-dim); display: grid; place-items: center; cursor: pointer; transition: background 160ms var(--ease), color 160ms var(--ease); }
+.epmore:hover, .epmore:focus-visible { background: var(--s3); color: var(--text); }

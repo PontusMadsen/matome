@@ -66,3 +66,9 @@ export function selectStreamsPath(partId: number, audioStreamId?: number, subtit
   if (subtitleStreamId !== undefined) q.set('subtitleStreamID', String(subtitleStreamId))
   return `/library/parts/${partId}?${q}`
 }
+
+/**
+ * Which subtitle stream to store on the server before transcoding. Nothing chosen means off (0): left unset, the server
+ * applies the account's automatic pick (e.g. forced tracks) and burns it into the picture.
+ */
+export const subtitleChoice = (chosen: number | undefined, partId: number | undefined): number | undefined => chosen ?? (partId !== undefined ? 0 : undefined)

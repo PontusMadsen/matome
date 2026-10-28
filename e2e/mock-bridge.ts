@@ -43,6 +43,8 @@ export function installMock(): void {
     'mpv:available': () => false,
     'playlists:list': () => [],
     // Like the live service, the list keeps returning an item for a while after it was removed.
+    'play:resumePoint': () => (window as any).__resume ?? 0,
+    'title:addToWatchlist': () => undefined,
     'watchlist:list': () => [
       { ratingKey: 'w1', title: 'Wanted One', year: 2026, type: 'movie', onWatchlist: true },
       { ratingKey: 'w2', title: 'Wanted Two', year: 2025, type: 'show', onWatchlist: true },

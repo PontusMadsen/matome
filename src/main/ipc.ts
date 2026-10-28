@@ -21,6 +21,8 @@ export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
     'mpv:play': (r) => svc.playMpv(r),
     'mpv:command': ({ args }) => svc.mpvCommand(args),
     'title:setWatched': ({ id, watched }) => svc.setWatched(id, watched),
+    'title:addToWatchlist': ({ id }) => svc.addTitleToWatchlist(id),
+    'play:resumePoint': ({ sources }) => svc.resumePoint(sources),
     'title:rate': ({ id, rating }) => svc.rate(id, rating),
     'collections:list': () => svc.collections(),
     'playlists:list': () => svc.playlists(),

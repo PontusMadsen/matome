@@ -31,6 +31,9 @@ export interface IpcChannels {
   'mpv:play': { req: MpvRequest; res: void }
   'mpv:command': { req: { args: unknown[] }; res: unknown }
   'title:setWatched': { req: { id: string; watched: boolean }; res: void }
+  'title:addToWatchlist': { req: { id: string }; res: void }
+  /** furthest saved position (ms) across every server that has this item, read fresh */
+  'play:resumePoint': { req: { sources: { serverId: string; ratingKey: string }[] }; res: number }
   'title:rate': { req: { id: string; rating: number | null }; res: void }
   'collections:list': { req: void; res: CollectionInfo[] }
   'playlists:list': { req: void; res: PlaylistInfo[] }

@@ -75,6 +75,16 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
   /** Absolute ms that video.currentTime=0 corresponds to: Plex starts the stream at the requested offset. */
   const base = useRef(0)
   const [restart, setRestart] = useState(0)
+  // Before the first request, ask every server for the furthest saved position: the copy we stream from may not be the one that has our progress.
+  const [startReady, setStartReady] = useState(false)
+  useEffect(() => {
+    let off = false
+    void window.flax.invoke('play:resumePoint', { sources: target.sources.map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })) })
+      .then((ms) => { if (!off && ms > resumeMs.current) { resumeMs.current = ms; lastPos.current = ms; setCur(safeStartMs(ms, target.durationMs ?? 0)) } })
+      .catch(() => undefined)
+      .finally(() => { if (!off) setStartReady(true) })
+    return () => { off = true }
+  }, [])
   const src = target.sources[srcIdx]
 
   // UI state
@@ -144,7 +154,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
 
   // (Re)start a transcode session whenever source / track / quality / seek-out-of-range changes.
   useEffect(() => {
-    if (!src || !video.current || kbps === null) return // wait for the Settings default so we start once
+    if (!src || !video.current || kbps === null || !startReady) return // wait for the Settings default and the resume point so we start once
     const el = video.current
     let cancelled = false
     const offset = Math.floor(safeStartMs(resumeMs.current, target.durationMs ?? 0) / 1000) * 1000
@@ -241,7 +251,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
       hls.current?.destroy()
       hls.current = null
     }
-  }, [src, audioId, subId, subMode, compat, kbps, srcIdx, restart, target.sources.length])
+  }, [src, audioId, subId, subMode, compat, kbps, srcIdx, restart, startReady, target.sources.length])
 
   // Closing the player (or moving to another episode, which remounts it) frees the server's stream slot.
   useEffect(() => {

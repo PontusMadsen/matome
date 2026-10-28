@@ -9,7 +9,7 @@ export interface MenuItem {
 }
 
 /** Right-click menu: `onContextMenu` goes on the target, `menu` renders the popup. */
-export function useContextMenu(items: () => MenuItem[]): { onContextMenu: (e: React.MouseEvent) => void; menu: ReactNode } {
+export function useContextMenu(items: () => MenuItem[]): { onContextMenu: (e: React.MouseEvent) => void; openMenu: (e: React.MouseEvent<HTMLElement>) => void; menu: ReactNode } {
   const [pos, setPos] = useState<{ x: number; y: number; items: MenuItem[] } | null>(null)
   useEffect(() => {
     if (!pos) return
@@ -27,6 +27,13 @@ export function useContextMenu(items: () => MenuItem[]): { onContextMenu: (e: Re
     }
   }, [pos])
   return {
+    /** The "⋮" button: same menu, opened next to the button. */
+    openMenu: (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const r = e.currentTarget.getBoundingClientRect()
+      setPos({ x: Math.max(8, Math.min(r.right - 190, window.innerWidth - 200)), y: Math.min(r.bottom + 4, window.innerHeight - 160), items: items() })
+    },
     onContextMenu: (e) => {
       e.preventDefault()
       e.stopPropagation()

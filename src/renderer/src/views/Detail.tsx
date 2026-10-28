@@ -11,11 +11,13 @@ const qLabel = (x: Source) =>
   [x.quality.res ? (/^\d+$/.test(x.quality.res) ? `${x.quality.res}p` : x.quality.res.toUpperCase()) : '', x.quality.codec?.toUpperCase(), x.quality.hdr ? 'HDR' : '', x.quality.bitrate ? `${(x.quality.bitrate / 1000).toFixed(1)} Mbps` : '']
     .filter(Boolean)
     .join(' · ')
+/** Saved position of a movie: the furthest on any server (progress is only written to the server we streamed from). */
+const furthest = (ps: { viewOffsetMs: number }[]) => Math.max(0, ...ps.map((p) => p.viewOffsetMs))
 const connLabel = (n: number) => ['Local', 'Remote', 'Relay'][n] ?? ''
 const fmtDur = (ms?: number) => (ms ? (ms >= 3_600_000 ? `${Math.floor(ms / 3_600_000)}h ${Math.round((ms % 3_600_000) / 60_000)}m` : `${Math.round(ms / 60_000)}m`) : '')
 
 function Episode({ e, t, onPlay, onChanged }: { e: MergedEpisode; t: MergedTitle; onPlay: () => void; onChanged: () => void }) {
-  const { onContextMenu, menu } = useContextMenu(() => [
+  const { onContextMenu, openMenu, menu } = useContextMenu(() => [
     { label: 'Play', onSelect: onPlay },
     {
       label: e.watched ? 'Mark as unwatched' : 'Mark as watched',
@@ -39,6 +41,7 @@ function Episode({ e, t, onPlay, onChanged }: { e: MergedEpisode; t: MergedTitle
       <div className={s.epmeta}>
         {fmtDur(e.durationMs)}
         {e.watched && <span className={s.seen} title="Watched"><Icon name="check" size={16} /></span>}
+        <button className={s.epmore} aria-label={`More for episode ${e.episode}`} title="More" onClick={openMenu}><Icon name="more" size={18} fill /></button>
       </div>
     </div>
   )
@@ -90,13 +93,13 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
     if (!pl) return
     if (prefs.data?.useMpv && mpvOk.data && pl.partKey) {
       setMpvErr('')
-      window.flax.invoke('mpv:play', { serverId: pl.serverId, ratingKey: pl.ratingKey, partKey: pl.partKey, title: t.title, startMs: pl.viewOffsetMs, markers: pl.markers }).catch((e: Error) => setMpvErr(e.message))
+      window.flax.invoke('mpv:play', { serverId: pl.serverId, ratingKey: pl.ratingKey, partKey: pl.partKey, title: t.title, startMs: furthest(data.playables), markers: pl.markers }).catch((e: Error) => setMpvErr(e.message))
       return
     }
     setPlay({
       title: t.title,
       sources: ordered.map((x) => ({ serverId: x.serverId, serverName: x.serverName, ratingKey: x.ratingKey })),
-      startMs: pl.viewOffsetMs,
+      startMs: furthest(data.playables),
       durationMs: pl.durationMs,
       audio: pl.audio,
       subtitles: pl.subtitles,
@@ -132,7 +135,7 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
     }
   }, [auto, data, eps.data, season, prefs.isFetched, mpvOk.isFetched])
 
-  const resume = t.type === 'movie' && data?.playables[0]?.viewOffsetMs ? data.playables[0].viewOffsetMs : 0
+  const resume = t.type === 'movie' && data ? furthest(data.playables) : 0
   const isWatched = t.type === 'movie' ? t.watched : t.unwatchedCount === 0
   const nextUp = eps.data?.findIndex((e) => !e.watched) ?? -1
 
