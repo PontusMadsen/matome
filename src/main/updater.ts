@@ -47,7 +47,7 @@ export class Updater {
       if (res.status === 404) throw new Error('No release published yet')
       if (!res.ok) throw new Error(`GitHub HTTP ${res.status}`)
       const info = parseRelease((await res.json()) as Release, process.arch)
-      if (!info) throw new Error(`Latest release has no build for ${process.arch}`)
+      if (!info) throw new Error('The newest release is still being built. Try again in a few minutes.')
       if (!isNewer(this.status.current, info.version)) {
         this.set({ state: 'idle', latest: info.version, checkedAt: Date.now() })
         return this.status

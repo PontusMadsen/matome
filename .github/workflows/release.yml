@@ -49,9 +49,11 @@ jobs:
         run: tools/smoke.sh
       - name: Checksums
         run: cd release && shasum -a 256 Flax-*.zip Flax-*.dmg > SHA256SUMS.txt && cat SHA256SUMS.txt
-      - name: Attach to release (created if missing)
+      - name: Attach to release (created as a draft, published only once every file is attached)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --target "$GITHUB_SHA" --title "Fläx ${TAG#v}" --generate-notes
+          # A release that is public but still empty would make the updater see a "latest" release with no build in it.
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --draft --target "$GITHUB_SHA" --title "Fläx ${TAG#v}" --generate-notes
           gh release upload "$TAG" release/Flax-*.zip release/Flax-*.dmg release/SHA256SUMS.txt --clobber
+          gh release edit "$TAG" --draft=false --latest
