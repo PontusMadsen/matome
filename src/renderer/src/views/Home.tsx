@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import type { ContinueItem, MergedTitle } from '@shared/types'
 import { useContinue, useLibrary } from '../api'
 import { Card, ContinueTile, RecentRow, Shelf, SkeletonShelf } from '../components/Grid'
@@ -12,6 +13,7 @@ export function Home({ onOpen }: { onOpen: (t: MergedTitle, el?: HTMLElement | n
   const movies = useLibrary('movie')
   const shows = useLibrary('show')
   const [play, setPlay] = useState<PlayTarget | null>(null)
+  const prefs = useQuery({ queryKey: ['settings'], queryFn: () => window.flax.invoke('settings:get', undefined) })
   const byId = useMemo(() => new Map([...(movies.data ?? []), ...(shows.data ?? [])].map((t) => [t.id, t])), [movies.data, shows.data])
   const recent = (xs: MergedTitle[] = []) => [...xs].sort((a, b) => b.addedAt - a.addedAt).slice(0, 24)
 
@@ -107,7 +109,7 @@ export function Home({ onOpen }: { onOpen: (t: MergedTitle, el?: HTMLElement | n
       ) : (
         <>
           <Shelf title="Recently added movies" hint="across all servers">
-            <RecentRow items={recent(movies.data)} onOpen={onOpen} />
+            <RecentRow items={recent(prefs.data?.hideWatchedMovies ? (movies.data ?? []).filter((t) => !t.watched) : movies.data)} onOpen={onOpen} />
           </Shelf>
           <Shelf title="Recently added shows" hint="across all servers">
             <RecentRow items={recent(shows.data)} onOpen={onOpen} />

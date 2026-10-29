@@ -17,6 +17,7 @@ export function installMock(): void {
       unwatchedCount: type === 'show' ? (i % 5) * 3 : 0, rating: 7.5, addedAt: 1000 - i, posters: [svg(300, 450, i, n)], poster: svg(300, 450, i, n), art: svg(1600, 700, i, ''),
       sources: [src('a', 'Home server', 1), src('b', 'Friend A', 2), src('c', 'Offline', 1, false)],
     }))
+  let prefs = { excludedServers: [] as string[], maxBitrateKbps: 2000, useMpv: false, autoSkipIntro: false, playbackSpeed: 1, audioBoostPct: 0, subScale: 1, hideWatchedMovies: false }
   const movies = mk('movie')
   const shows = mk('show')
   const eps = [1, 2, 3, 4].map((n) => ({ season: 3, episode: n, title: `Episode ${n}`, summary: 'A summary.', durationMs: 3_000_000, watched: n < 2, viewOffsetMs: 0, sources: [{ serverId: 'a', serverName: 'Home server', ratingKey: '9', online: true, connectionPref: 1 }] }))
@@ -38,7 +39,8 @@ export function installMock(): void {
     'title:detail': (r) => ({ id: r.id, summary: 'Failed spies are exiled to Slough House.', cast: [{ name: 'Gary Oldman' }], directors: ['Someone'], durationMs: 7_200_000, contentRating: 'TV-MA', playables: [{ serverId: 'a', ratingKey: '1', viewOffsetMs: 0, durationMs: 7_200_000, audio: [], subtitles: [], markers: [] }], seasons: [{ index: 1, title: 'Season 1', episodeCount: 6 }, { index: 3, title: 'Season 3', episodeCount: 6 }, { index: 2, title: 'Season 2', episodeCount: 6 }, { index: 0, title: 'Specials', episodeCount: 1 }] }),
     'title:episodes': () => eps,
     'search:query': (r) => ({ local: [...shows, ...movies].filter((t) => t.title.toLowerCase().includes(String(r.query).toLowerCase())), discover: [] }),
-    'settings:get': () => ({ excludedServers: [], maxBitrateKbps: 2000, useMpv: false, autoSkipIntro: false, playbackSpeed: 1, audioBoostPct: 0, subScale: 1 }),
+    'settings:get': () => prefs,
+    'settings:set': (v: unknown) => { prefs = v as typeof prefs },
     'update:status': () => ({ current: 'dev', state: 'disabled' }),
     'mpv:available': () => false,
     'playlists:list': () => [],

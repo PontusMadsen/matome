@@ -242,6 +242,18 @@ test('playback starts from the furthest position any server has, not the first o
   await expect.poll(() => page.evaluate(() => (window as any).__calls.find((c: any) => c.c === 'play:start')?.r?.offsetMs)).toBe(754_000)
 })
 
+test('setting: hide watched movies keeps them out of Recently added movies on Home', async ({ page }) => {
+  const recent = page.locator('section', { has: page.getByRole('heading', { name: 'Recently added movies' }) })
+  await expect(recent.locator('[data-tid="movie:0"]')).toBeVisible() // movie:0 is watched
+  await page.getByRole('button', { name: 'Settings' }).click()
+  await page.getByLabel('Hide watched movies on Home').click()
+  await expect(page.getByLabel('Hide watched movies on Home')).toBeChecked()
+  await page.getByRole('button', { name: 'Home', exact: true }).click()
+  await settle(page)
+  await expect(recent.locator('[data-tid="movie:1"]')).toBeVisible()
+  await expect(recent.locator('[data-tid="movie:0"]')).toHaveCount(0)
+})
+
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {
   const heroes = page.getByTestId('continue-hero')
   for (const [width, expected] of [[820, 1], [1360, 2], [1920, 3]] as const) {

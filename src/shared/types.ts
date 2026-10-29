@@ -195,6 +195,8 @@ export interface Settings {
   /** extra volume above 100, 0-30 */
   audioBoostPct: number
   subScale: number
+  /** Home screen: leave movies you've already watched out of "Recently added movies" */
+  hideWatchedMovies: boolean
 }
 
 export interface MpvRequest {
