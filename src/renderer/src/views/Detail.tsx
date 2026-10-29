@@ -155,7 +155,7 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
               {t.type === 'show' && data && (<><span className={s.sep} /><span>{data.seasons.length} season{data.seasons.length === 1 ? '' : 's'}</span></>)}
               {/* Plex's unlabeled score (its source depends on the library's metadata agent): only shown when there is no IMDb / Rotten Tomatoes score to show instead. */}
               {t.rating && data && !data.ratings ? (<><span className={s.sep} /><span className={s.rating} title="Rating stored by Plex (source depends on your library's metadata agent)">★ {t.rating.toFixed(1)}</span></>) : null}
-              {data?.ratings?.imdb !== undefined && (<><span className={s.sep} /><span className={s.score} title="IMDb rating (via Plex)"><b>IMDb</b> {data.ratings.imdb.toFixed(1)}</span></>)}
+              {data?.ratings?.imdb !== undefined && (<><span className={s.sep} /><span className={s.score} title="IMDb rating (via Plex)"><span className={s.imdb}>IMDb</span> {data.ratings.imdb.toFixed(1)}</span></>)}
               {data?.ratings?.rtCritic !== undefined && (<><span className={s.sep} /><span className={s.score} title="Rotten Tomatoes critics (via Plex)">🍅 {data.ratings.rtCritic}%</span></>)}
               {data?.ratings?.rtAudience !== undefined && (<><span className={s.sep} /><span className={s.score} title="Rotten Tomatoes audience (via Plex)">🍿 {data.ratings.rtAudience}%</span></>)}
             </div>
