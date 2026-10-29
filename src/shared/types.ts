@@ -123,6 +123,13 @@ export interface Season {
   episodeCount: number
 }
 
+/** Scores Plex carries in a title's metadata (not fetched from IMDb/Rotten Tomatoes ourselves). IMDb 0-10; Rotten Tomatoes as percent. */
+export interface Ratings {
+  imdb?: number
+  rtCritic?: number
+  rtAudience?: number
+}
+
 export interface TitleDetail {
   id: string
   summary?: string
@@ -130,6 +137,7 @@ export interface TitleDetail {
   directors: string[]
   durationMs?: number
   contentRating?: string
+  ratings?: Ratings
   /** per-source playable info (movies) */
   playables: { serverId: string; ratingKey: string; partKey?: string; partId?: number; markers: Marker[]; durationMs?: number; viewOffsetMs: number; audio: Stream[]; subtitles: Stream[] }[]
   seasons: Season[]

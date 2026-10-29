@@ -16,3 +16,11 @@ export function safeStartMs(startMs: number, durationMs: number): number {
   if (durationMs > 0 && startMs > durationMs - 15_000) return 0
   return startMs
 }
+
+/**
+ * The server dropped our transcode session (paused for long, server restarted or busy): its segments now answer 404/410.
+ * Starting a new session at the current position brings playback back.
+ */
+export function isDeadSession(d: { type?: string; details?: string; response?: { code?: number } }): boolean {
+  return d.type === 'networkError' && (d.details === 'fragLoadError' || d.details === 'levelLoadError') && (d.response?.code === 404 || d.response?.code === 410)
+}

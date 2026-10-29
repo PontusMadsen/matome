@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { detectBase, safeStartMs } from '../src/renderer/src/components/playbackBase'
+import { detectBase, isDeadSession, safeStartMs } from '../src/renderer/src/components/playbackBase'
 
 test('zero-based restarted stream: base is the offset', () => {
   expect(detectBase(120_000, 0.4)).toBe(120_000)
@@ -17,4 +17,12 @@ test('resume points at the end of the file restart from 0', () => {
   expect(safeStartMs(1_200_000, 3_299_000)).toBe(1_200_000)
   expect(safeStartMs(900_000, 0)).toBe(900_000)
   expect(safeStartMs(NaN, 100)).toBe(0)
+})
+
+test('isDeadSession: segment 404/410 means the transcode session is gone; other errors do not', () => {
+  expect(isDeadSession({ type: 'networkError', details: 'fragLoadError', response: { code: 404 } })).toBe(true)
+  expect(isDeadSession({ type: 'networkError', details: 'levelLoadError', response: { code: 410 } })).toBe(true)
+  expect(isDeadSession({ type: 'networkError', details: 'fragLoadError', response: { code: 500 } })).toBe(false)
+  expect(isDeadSession({ type: 'mediaError', details: 'bufferStalledError' })).toBe(false)
+  expect(isDeadSession({ type: 'networkError', details: 'manifestLoadError', response: { code: 404 } })).toBe(false)
 })

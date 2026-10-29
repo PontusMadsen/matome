@@ -254,6 +254,16 @@ test('setting: hide watched movies keeps them out of Recently added movies on Ho
   await expect(recent.locator('[data-tid="movie:0"]')).toHaveCount(0)
 })
 
+test('detail shows the IMDb and Rotten Tomatoes scores Plex provides', async ({ page }) => {
+  await page.getByRole('button', { name: 'TV Shows' }).click()
+  await settle(page)
+  await page.locator('[data-tid]').first().click()
+  await expect(page.getByText('8.1').first()).toBeVisible()
+  await expect(page.getByTitle(/Rotten Tomatoes critics/)).toContainText('96%')
+  await expect(page.getByTitle(/Rotten Tomatoes audience/)).toContainText('88%')
+  await expect(page.getByTitle(/Rating stored by Plex/)).toHaveCount(0) // the unlabeled star gives way to the real scores
+})
+
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {
   const heroes = page.getByTestId('continue-hero')
   for (const [width, expected] of [[820, 1], [1360, 2], [1920, 3]] as const) {

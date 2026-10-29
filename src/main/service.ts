@@ -449,6 +449,8 @@ export class Service {
       directors: first.directors,
       durationMs: first.durationMs,
       contentRating: first.contentRating,
+      // First server that has a given score wins (they are Plex's own, so the same title carries the same numbers).
+      ratings: parts.reduce<TitleDetail['ratings']>((acc, p) => (p.ratings ? { ...p.ratings, ...acc } : acc), undefined),
       summary: first.summary,
       playables: parts.map((p) => p.playable),
       seasons,

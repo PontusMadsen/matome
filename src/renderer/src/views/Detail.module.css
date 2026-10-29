@@ -12,6 +12,8 @@
 .facts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; color: var(--text-dim); font-size: 13.5px; }
 .facts .sep { width: 3px; height: 3px; border-radius: 50%; background: var(--text-faint); }
 .rating { color: var(--accent); font-weight: 650; }
+.score { color: var(--text-dim); font-weight: 600; font-variant-numeric: tabular-nums; }
+.score b { color: var(--text-faint); font-weight: 700; letter-spacing: 0.03em; font-size: 0.9em; }
 .genres { display: flex; flex-wrap: wrap; gap: 6px; }
 .summary { max-width: 68ch; color: var(--text); opacity: .92; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 4px; }

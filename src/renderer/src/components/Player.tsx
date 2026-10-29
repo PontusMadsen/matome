@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Hls from 'hls.js'
 import { QUALITY_OPTIONS, type Marker, type Stream } from '@shared/types'
 import { Icon } from './Icon'
-import { detectBase, safeStartMs } from './playbackBase'
+import { detectBase, isDeadSession, safeStartMs } from './playbackBase'
 import { isTextSubtitle, parseSubtitles, type Cue } from '@shared/subtitles'
 import s from './Player.module.css'
 
@@ -65,6 +65,8 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
   const liveServer = useRef<string | null>(null)
   /** Consecutive 'server busy' (bare 400) retries for the current request; reset once playing. */
   const busyRetries = useRef(0)
+  /** Restarts after the server dropped our transcode session; reset once playing again. */
+  const deadRetries = useRef(0)
   const [error, setError] = useState('')
   const [rate, setRate] = useState(1)
   // Transcode cap: starts from the Settings default, changeable mid-playback (resumes at the same position).
@@ -173,7 +175,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
       }
     }
     el.textTracks.addEventListener('addtrack', quiet)
-    const onPlaying = () => { base.current = detectBase(offset, el.currentTime); busyRetries.current = 0; applyCuesRef.current(); quiet() }
+    const onPlaying = () => { base.current = detectBase(offset, el.currentTime); busyRetries.current = 0; deadRetries.current = 0; applyCuesRef.current(); quiet() }
     el.addEventListener('playing', onPlaying, { once: true })
     setWaiting(true)
     if (liveServer.current && liveServer.current !== src.serverId) {
@@ -194,6 +196,14 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
             const detail = `${d.type}/${d.details}${d.response?.code ? ` HTTP ${d.response.code}` : ''}`
             void window.flax.invoke('app:log', { msg: `hls ${d.fatal ? 'FATAL' : 'error'} ${src.serverName}: ${detail}` })
             if (!d.fatal) return
+            // The server forgot our stream (segments answer 404): start a fresh session at the current position.
+            if (isDeadSession(d) && deadRetries.current < 2) {
+              deadRetries.current += 1
+              resumeMs.current = base.current + el.currentTime * 1000
+              void window.flax.invoke('app:log', { msg: `stream session lost on ${src.serverName}; restarting at ${Math.round(resumeMs.current / 1000)}s (${deadRetries.current}/2)` })
+              setRestart((n) => n + 1)
+              return
+            }
             // A bare 400 usually means the server is still busy with the previous stream: wait and retry as-is first.
             if (d.details === 'manifestLoadError' && busyRetries.current < 2) {
               busyRetries.current += 1
