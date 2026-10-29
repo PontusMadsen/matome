@@ -7,7 +7,8 @@ export function loadSettings(file: string): Settings {
   if (!existsSync(file)) return { ...DEFAULT_SETTINGS }
   try {
     const raw = JSON.parse(readFileSync(file, 'utf8')) as Partial<Settings> & { hideWatchedMovies?: boolean }
-    const { hideWatchedMovies, ...rest } = raw // renamed in 0.9.13 when the setting started covering shows too
+    const { hideWatchedMovies, ...rest } = raw
+    if ((rest.skin as string) === 'macos') rest.skin = 'classicmac' // renamed together with the skin's redesign // renamed in 0.9.13 when the setting started covering shows too
     return { ...DEFAULT_SETTINGS, ...rest, hideWatchedOnHome: rest.hideWatchedOnHome ?? hideWatchedMovies ?? false }
   } catch {
     return { ...DEFAULT_SETTINGS }

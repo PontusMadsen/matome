@@ -37,53 +37,56 @@ img[data-logo='dark-on-light'] { display: none; }
 [data-skin='xp'] select, [data-skin='xp'] .input { background-color: #fff; border: 1px solid #7f9db9; border-radius: 0; color: #000; }
 [data-skin='xp'] .chip { border-radius: 3px; background: #fff; }
 
-/* ------------------------------------------------------------------ macOS (glass, light and dark) */
-:root[data-skin='macos'] {
-  --bg: #f2f2f7; --s1: rgba(255, 255, 255, 0.6); --s2: rgba(255, 255, 255, 0.78); --s3: rgba(255, 255, 255, 0.72); --s4: rgba(255, 255, 255, 0.95);
-  --border: rgba(60, 60, 67, 0.14); --border-strong: rgba(60, 60, 67, 0.3);
-  --text: #1d1d1f; --text-dim: #5b5b60; --text-faint: #86868b;
-  --accent: #007aff; --accent-hover: #3395ff; --accent-ink: #ffffff; --accent-soft: rgba(0, 122, 255, 0.14);
-  --ok: #34c759; --bad: #ff3b30;
-  --r-sm: 8px; --r-md: 12px; --r-lg: 22px;
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.08); --shadow-2: 0 14px 44px rgba(0, 0, 0, 0.18);
-  --shade: 242, 242, 247; --arrow-bg: rgba(255, 255, 255, 0.85);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif; color-scheme: light;
+/* ------------------------------------------------------------------ Classic Mac (1984: black, white, dither) */
+:root[data-skin='classicmac'] {
+  --bg: #ffffff; --s1: #ffffff; --s2: #ffffff; --s3: #ffffff; --s4: #e8e8e8;
+  --border: #000000; --border-strong: #000000;
+  --text: #000000; --text-dim: #2b2b2b; --text-faint: #5a5a5a;
+  --accent: #000000; --accent-hover: #000000; --accent-ink: #ffffff; --accent-soft: rgba(0, 0, 0, 0.14);
+  --ok: #000000; --bad: #000000;
+  --r-sm: 5px; --r-md: 3px; --r-lg: 4px;
+  --shadow-1: 2px 2px 0 #000; --shadow-2: 3px 3px 0 #000;
+  --shade: 255, 255, 255; --arrow-bg: #ffffff;
+  font-family: Chicago, ChicagoFLF, Geneva, Monaco, 'Lucida Grande', monospace; font-size: 12px; color-scheme: light; -webkit-font-smoothing: none; font-smooth: never;
 }
-[data-skin='macos'] body { background: linear-gradient(135deg, #e6ecf8 0%, #f3eef8 45%, #e5f2f4 100%) fixed; }
-[data-skin='macos'] [data-ui='sidebar'] { background: rgba(250, 250, 252, 0.55); -webkit-backdrop-filter: blur(34px) saturate(1.8); backdrop-filter: blur(34px) saturate(1.8); border-right: 1px solid rgba(60, 60, 67, 0.12); }
-[data-skin='macos'] [data-ui='nav'] { border-radius: 10px; }
-[data-skin='macos'] [data-ui='ind'] { background: rgba(0, 122, 255, 0.14); box-shadow: none; border-radius: 10px; }
-[data-skin='macos'] [data-ui='nav'][data-active='true'] { color: var(--accent); }
-[data-skin='macos'] [data-ui='top'] h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
-[data-skin='macos'] .btn { border-radius: 999px; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.85); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(60, 60, 67, 0.18); -webkit-backdrop-filter: blur(16px) saturate(1.6); backdrop-filter: blur(16px) saturate(1.6); font-weight: 500; }
-[data-skin='macos'] .btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.95); border-color: #fff; }
-[data-skin='macos'] .btn-primary { background: var(--accent); border-color: transparent; color: #fff; box-shadow: 0 1px 2px rgba(0, 122, 255, 0.35); }
-[data-skin='macos'] .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
-[data-skin='macos'] .btn-ghost { background: transparent; box-shadow: none; border-color: transparent; }
-[data-skin='macos'] select, [data-skin='macos'] .input { border-radius: 9px; background-color: rgba(255, 255, 255, 0.75); }
-[data-skin='macos'] .chip { background: rgba(255, 255, 255, 0.7); }
-[data-skin='macos'] img[data-logo='light-on-dark'] { display: none; }
-[data-skin='macos'] img[data-logo='dark-on-light'] { display: block; }
-@media (prefers-color-scheme: dark) {
-  :root[data-skin='macos'] {
-    --bg: #1c1c1e; --s1: rgba(44, 44, 46, 0.62); --s2: rgba(58, 58, 60, 0.6); --s3: rgba(72, 72, 74, 0.6); --s4: rgba(99, 99, 102, 0.6);
-    --border: rgba(255, 255, 255, 0.1); --border-strong: rgba(255, 255, 255, 0.22);
-    --text: #f5f5f7; --text-dim: #aeaeb2; --text-faint: #8e8e93;
-    --accent: #0a84ff; --accent-hover: #409cff; --accent-soft: rgba(10, 132, 255, 0.2);
-    --ok: #30d158; --bad: #ff453a; --shade: 28, 28, 30; --arrow-bg: rgba(58, 58, 60, 0.9); color-scheme: dark;
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 16px rgba(0, 0, 0, 0.3); --shadow-2: 0 14px 44px rgba(0, 0, 0, 0.55);
-  }
-  [data-skin='macos'] body { background: linear-gradient(135deg, #14161d 0%, #1b1626 45%, #12202a 100%) fixed; }
-  [data-skin='macos'] [data-ui='sidebar'] { background: rgba(40, 40, 44, 0.5); border-right-color: rgba(255, 255, 255, 0.08); }
-  [data-skin='macos'] [data-ui='ind'] { background: rgba(10, 132, 255, 0.24); }
-  [data-skin='macos'] .btn { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.14); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); }
-  [data-skin='macos'] .btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.2); }
-  [data-skin='macos'] .btn-primary { background: var(--accent); }
-  [data-skin='macos'] select, [data-skin='macos'] .input { background-color: rgba(255, 255, 255, 0.1); }
-  [data-skin='macos'] .chip { background: rgba(255, 255, 255, 0.1); }
-  [data-skin='macos'] img[data-logo='light-on-dark'] { display: block; }
-  [data-skin='macos'] img[data-logo='dark-on-light'] { display: none; }
-}
+/* 50% grey made of black and white pixels: the classic desktop pattern, used for shadows. */
+[data-skin='classicmac'] { --dither: conic-gradient(#000 25%, #fff 0 50%, #000 0 75%, #fff 0) 0 0 / 2px 2px; }
+[data-skin='classicmac'] body { background: #fff; }
+[data-skin='classicmac'] [data-ui='sidebar'] { position: relative; background-color: #fff; background-image: radial-gradient(#000 0.6px, transparent 0.75px); background-size: 4px 4px; border-right: 1px solid #000; }
+[data-skin='classicmac'] [data-ui='sidebar']::after { content: ''; position: absolute; top: 3px; bottom: 0; right: -5px; width: 4px; background: var(--dither); z-index: 3; pointer-events: none; }
+[data-skin='classicmac'] [data-ui='sidebar'] img[data-logo='dark-on-light'] { background: #fff; padding: 6px 8px; border: 1px solid #000; width: 140px; box-shadow: 2px 2px 0 #000; }
+[data-skin='classicmac'] img[data-logo='light-on-dark'] { display: none; }
+[data-skin='classicmac'] img[data-logo='dark-on-light'] { display: block; }
+[data-skin='classicmac'] [data-ui='nav'] { background: #fff; border: 1px solid #000; border-radius: 0; color: #000; font-weight: 400; }
+[data-skin='classicmac'] [data-ui='nav']:hover { background: #fff; color: #000; box-shadow: 2px 2px 0 #000; }
+[data-skin='classicmac'] [data-ui='nav'][data-active='true'] { background: #000 !important; color: #fff; }
+[data-skin='classicmac'] [data-ui='nav'][data-active='true'] svg { color: #fff; }
+[data-skin='classicmac'] [data-ui='ind'] { display: none; }
+[data-skin='classicmac'] [data-ui='servers'] { background: #fff; border: 1px solid #000; margin: 0 -2px; padding: 10px; gap: 4px; }
+[data-skin='classicmac'] [data-ui='servers'] button:hover { background: #000; color: #fff; }
+[data-skin='classicmac'] [data-ui='servers'] button:hover .dot { border-color: #fff; }
+[data-skin='classicmac'] .dot { background: #fff; border: 1px solid #000; border-radius: 50%; width: 9px; height: 9px; }
+[data-skin='classicmac'] .dot.on { background: #000; }
+/* Title bar: pinstripes, a close box on the left and the title in a white label. */
+[data-skin='classicmac'] [data-ui='top'] { position: relative; justify-content: center; padding: 44px 24px 0; margin-bottom: 14px; background: repeating-linear-gradient(180deg, #000 0 1px, #fff 1px 3px) left bottom / 100% 15px no-repeat, #fff; border-bottom: 2px solid #000; }
+[data-skin='classicmac'] [data-ui='top']::before { content: ''; position: absolute; left: 20px; bottom: 2px; width: 11px; height: 11px; background: #fff; border: 1px solid #000; }
+[data-skin='classicmac'] [data-ui='top']::after { content: ''; position: absolute; left: 0; right: -4px; bottom: -6px; height: 4px; background: var(--dither); pointer-events: none; }
+[data-skin='classicmac'] [data-ui='top'] h1 { background: #fff; padding: 0 12px; font-size: 12px; line-height: 15px; font-weight: 700; letter-spacing: 0; }
+[data-skin='classicmac'] .btn { background: #fff; color: #000; border: 1px solid #000; border-radius: 6px; font-weight: 400; box-shadow: 1px 1px 0 #000; }
+[data-skin='classicmac'] .btn:hover:not(:disabled) { background: #000; color: #fff; border-color: #000; }
+[data-skin='classicmac'] .btn:active:not(:disabled) { transform: none; box-shadow: none; }
+[data-skin='classicmac'] .btn-primary { background: #fff; color: #000; box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000; font-weight: 700; }
+[data-skin='classicmac'] .btn-primary:hover:not(:disabled) { background: #000; color: #fff; }
+[data-skin='classicmac'] .btn-ghost { background: transparent; border-color: transparent; box-shadow: none; }
+[data-skin='classicmac'] .btn-ghost:hover:not(:disabled) { background: #000; color: #fff; }
+[data-skin='classicmac'] select, [data-skin='classicmac'] .input { background-color: #fff; color: #000; border: 1px solid #000; border-radius: 0; box-shadow: 1px 1px 0 #000; }
+[data-skin='classicmac'] [data-poster] { outline: 1px solid #000; box-shadow: 2px 2px 0 #000; border-radius: 0; }
+[data-skin='classicmac'] [data-testid='continue-hero'] { border: 1px solid #000; border-radius: 0; box-shadow: 3px 3px 0 #000; }
+[data-skin='classicmac'] .chip { background: #fff; color: #000; border: 1px solid #000; border-radius: 0; }
+[data-skin='classicmac'] .skeleton { background: var(--dither); animation: none; opacity: 0.35; }
+[data-skin='classicmac'] main img { filter: grayscale(1) contrast(1.35); }
+[data-skin='classicmac'] ::selection { background: #000; color: #fff; }
+[data-skin='classicmac'] :focus-visible { outline: 2px dotted #000; outline-offset: 2px; }
 
 /* ------------------------------------------------------------------ Winamp (classic metal, green LEDs) */
 :root[data-skin='winamp'] {
