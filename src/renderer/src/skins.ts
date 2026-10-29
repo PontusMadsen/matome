@@ -2,9 +2,7 @@ import type { SkinId } from '@shared/types'
 
 export const SKINS: { id: SkinId; name: string; blurb: string; swatch: [string, string, string] }[] = [
   { id: 'default', name: 'Default', blurb: 'Dark, dense, teal.', swatch: ['#0E1116', '#1B212B', '#2DD4BF'] },
-  { id: 'xp', name: 'Windows XP', blurb: 'Luna blue, beige and bevels.', swatch: ['#ECE9D8', '#6375D6', '#245EDC'] },
   { id: 'classicmac', name: 'Classic Mac', blurb: '1984: black, white and dithered shadows.', swatch: ['#FFFFFF', '#000000', '#8A8A8A'] },
-  { id: 'winamp', name: 'Winamp', blurb: 'Brushed metal and green LEDs.', swatch: ['#232432', '#3A3D52', '#00E000'] },
 ]
 
 const KEY = 'flax-skin'

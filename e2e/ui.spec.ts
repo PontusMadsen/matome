@@ -289,13 +289,13 @@ test('setting: hide watched titles also hides finished shows in Recently added s
 test('skin chooser: switches the look at once and keeps it', async ({ page }) => {
   await page.getByRole('button', { name: 'Settings' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-skin', 'default')
-  for (const [name, id] of [['Windows XP', 'xp'], ['Classic Mac', 'classicmac'], ['Winamp', 'winamp'], ['Default', 'default']] as const) {
+  for (const [name, id] of [['Classic Mac', 'classicmac'], ['Default', 'default']] as const) {
     await page.getByRole('radio', { name: new RegExp(`^${name}`) }).click()
     await expect(page.locator('html')).toHaveAttribute('data-skin', id)
     await expect(page.getByRole('radio', { name: new RegExp(`^${name}`) })).toHaveAttribute('aria-checked', 'true')
   }
-  await page.getByRole('radio', { name: /^Winamp/ }).click()
-  expect(await page.evaluate(() => localStorage.getItem('flax-skin'))).toBe('winamp') // remembered so the next launch paints with it from the first frame
+  await page.getByRole('radio', { name: /^Classic Mac/ }).click()
+  expect(await page.evaluate(() => localStorage.getItem('flax-skin'))).toBe('classicmac') // remembered so the next launch paints with it from the first frame
 })
 
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {

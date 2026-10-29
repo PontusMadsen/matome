@@ -191,7 +191,7 @@ export interface ContinueItem {
   titleId?: string
 }
 
-export type SkinId = 'default' | 'xp' | 'classicmac' | 'winamp'
+export type SkinId = 'default' | 'classicmac'
 
 export interface Settings {
   excludedServers: string[]

@@ -1,41 +1,9 @@
 /*
  * Skins: the default look lives in tokens.css. A skin overrides the same tokens and adds a few signature touches
  * (data-ui hooks on the shell: sidebar / top / nav / ind / servers). Chosen in Settings -> Appearance.
- * These are original CSS imitations of period looks: no operating-system or application artwork is used.
+ * The classic Mac look is an original CSS imitation: no operating-system artwork is used.
  */
 img[data-logo='dark-on-light'] { display: none; }
-
-/* ------------------------------------------------------------------ Windows XP (Luna) */
-:root[data-skin='xp'] {
-  --bg: #ece9d8; --s1: #f6f5ec; --s2: #ffffff; --s3: #ece9d8; --s4: #f7f5e8;
-  --border: #aca899; --border-strong: #7f9db9;
-  --text: #111111; --text-dim: #444444; --text-faint: #6b6b6b;
-  --accent: #245edc; --accent-hover: #3d78f2; --accent-ink: #ffffff; --accent-soft: rgba(36, 94, 220, 0.18);
-  --ok: #3a9d23; --bad: #c0392b;
-  --r-sm: 3px; --r-md: 4px; --r-lg: 8px;
-  --shadow-1: 1px 1px 3px rgba(0, 0, 0, 0.35); --shadow-2: 3px 3px 9px rgba(0, 0, 0, 0.4);
-  --shade: 236, 233, 216; --arrow-bg: #f6f5ec;
-  font-family: Tahoma, 'Segoe UI', Verdana, sans-serif; font-size: 13px; color-scheme: light; -webkit-font-smoothing: auto;
-}
-[data-skin='xp'] [data-ui='sidebar'] { background: linear-gradient(180deg, #7ba2e7 0%, #6375d6 100%); border-right: 1px solid #003c74; }
-[data-skin='xp'] [data-ui='sidebar'] [data-ui='nav'] { color: #fff; font-weight: 700; border-radius: 3px; }
-[data-skin='xp'] [data-ui='sidebar'] [data-ui='nav']:hover { background: rgba(255, 255, 255, 0.25); }
-[data-skin='xp'] [data-ui='sidebar'] [data-ui='nav'][data-active='true'] { background: #fff !important; color: #215dc6; }
-[data-skin='xp'] [data-ui='sidebar'] [data-ui='nav'][data-active='true'] svg { color: #215dc6; }
-[data-skin='xp'] [data-ui='ind'] { display: none; }
-[data-skin='xp'] [data-ui='servers'] { border-top: 1px solid rgba(255, 255, 255, 0.45); }
-[data-skin='xp'] [data-ui='servers'] * { color: #fff; }
-[data-skin='xp'] [data-ui='servers'] button:hover { background: rgba(255, 255, 255, 0.22); }
-[data-skin='xp'] [data-ui='top'] { background: linear-gradient(180deg, #3a8cff 0%, #0a5fd8 12%, #0053e2 50%, #0a47c0 88%, #0a3fa8 100%); padding-top: 44px; padding-bottom: 7px; box-shadow: 0 1px 0 #003c74; }
-[data-skin='xp'] [data-ui='top'] h1 { color: #fff; font-size: 15px; font-weight: 700; text-shadow: 1px 1px 0 #0a246a; letter-spacing: 0; }
-[data-skin='xp'] .btn { background: linear-gradient(180deg, #fff 0%, #ecebe5 86%, #d8d0c4 100%); border: 1px solid #003c74; border-radius: 3px; color: #000; font-weight: 400; }
-[data-skin='xp'] .btn:hover:not(:disabled) { background: linear-gradient(180deg, #fff 0%, #ecebe5 86%, #d8d0c4 100%); border-color: #003c74; box-shadow: inset 0 0 0 2px #ffc72c; }
-[data-skin='xp'] .btn:active:not(:disabled) { box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.3); background: #e2dfd0; }
-[data-skin='xp'] .btn-primary { background: linear-gradient(180deg, #6ea1f7 0%, #2f66dc 50%, #2555cc 100%); border-color: #00267a; color: #fff; font-weight: 700; }
-[data-skin='xp'] .btn-primary:hover:not(:disabled) { background: linear-gradient(180deg, #7eaeff 0%, #3d78f2 50%, #2f66dc 100%); border-color: #00267a; box-shadow: inset 0 0 0 2px #ffc72c; }
-[data-skin='xp'] .btn-ghost { background: transparent; border-color: transparent; }
-[data-skin='xp'] select, [data-skin='xp'] .input { background-color: #fff; border: 1px solid #7f9db9; border-radius: 0; color: #000; }
-[data-skin='xp'] .chip { border-radius: 3px; background: #fff; }
 
 /* ------------------------------------------------------------------ Classic Mac (1984: black, white, dither) */
 :root[data-skin='classicmac'] {
@@ -87,37 +55,3 @@ img[data-logo='dark-on-light'] { display: none; }
 [data-skin='classicmac'] main img { filter: grayscale(1) contrast(1.35); }
 [data-skin='classicmac'] ::selection { background: #000; color: #fff; }
 [data-skin='classicmac'] :focus-visible { outline: 2px dotted #000; outline-offset: 2px; }
-
-/* ------------------------------------------------------------------ Winamp (classic metal, green LEDs) */
-:root[data-skin='winamp'] {
-  --bg: #14151c; --s1: #2a2c3a; --s2: #0d0e14; --s3: #3b3e52; --s4: #4b4f68;
-  --border: #0a0a10; --border-strong: #6c7190;
-  --text: #d8dde6; --text-dim: #9aa3b5; --text-faint: #6f7790;
-  --accent: #00e000; --accent-hover: #5cff5c; --accent-ink: #021402; --accent-soft: rgba(0, 224, 0, 0.16);
-  --ok: #00e000; --bad: #ff4040;
-  --r-sm: 0px; --r-md: 0px; --r-lg: 2px;
-  --shadow-1: 0 0 0 1px #000; --shadow-2: 0 0 0 1px #000, 0 6px 18px rgba(0, 0, 0, 0.6);
-  --shade: 20, 21, 28; --arrow-bg: #3b3e52;
-  font-family: 'Lucida Console', Menlo, 'Courier New', monospace; font-size: 12px; color-scheme: dark; -webkit-font-smoothing: auto;
-}
-[data-skin='winamp'] body { background: #14151c; }
-[data-skin='winamp'] [data-ui='sidebar'] { background: linear-gradient(180deg, #4a4e66 0%, #2a2c3a 14%, #23242f 100%); border-right: 2px solid; border-color: #6c7190 #0a0a10 #0a0a10 #6c7190; }
-[data-skin='winamp'] [data-ui='nav'] { border-radius: 0; text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; color: #b7bfd2; }
-[data-skin='winamp'] [data-ui='nav']:hover { background: #0d0e14; color: #00ff00; }
-[data-skin='winamp'] [data-ui='ind'] { display: none; }
-[data-skin='winamp'] [data-ui='nav'][data-active='true'] { background: #00e000 !important; color: #021402; font-weight: 700; }
-[data-skin='winamp'] [data-ui='nav'][data-active='true'] svg { color: #021402; }
-[data-skin='winamp'] [data-ui='servers'] { border-top: 1px solid #0a0a10; box-shadow: 0 -1px 0 #6c7190; }
-[data-skin='winamp'] [data-ui='servers'] * { font-size: 11px; }
-[data-skin='winamp'] [data-ui='top'] { padding-bottom: 12px; }
-[data-skin='winamp'] [data-ui='top'] h1 { background: #000; color: #00ff00; text-shadow: 0 0 6px rgba(0, 255, 0, 0.55); font-size: 13px; font-weight: 400; letter-spacing: 0.14em; text-transform: uppercase; padding: 5px 12px; border: 2px solid; border-color: #0a0a10 #6c7190 #6c7190 #0a0a10; }
-[data-skin='winamp'] .btn { background: linear-gradient(180deg, #5a5e78 0%, #3b3e52 100%); border: 1px solid; border-color: #8a8fb0 #14151c #14151c #8a8fb0; border-radius: 0; color: #e6e9f2; font-size: 11px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; }
-[data-skin='winamp'] .btn:hover:not(:disabled) { background: linear-gradient(180deg, #6a6e8a 0%, #4b4f68 100%); border-color: #8a8fb0 #14151c #14151c #8a8fb0; color: #00ff00; }
-[data-skin='winamp'] .btn:active:not(:disabled) { border-color: #14151c #8a8fb0 #8a8fb0 #14151c; transform: none; background: #2a2c3a; }
-[data-skin='winamp'] .btn-primary { background: #04210a; color: #00ff00; text-shadow: 0 0 5px rgba(0, 255, 0, 0.6); }
-[data-skin='winamp'] .btn-primary:hover:not(:disabled) { background: #073a12; color: #5cff5c; }
-[data-skin='winamp'] .btn-ghost { background: transparent; border-color: transparent; }
-[data-skin='winamp'] select, [data-skin='winamp'] .input { background-color: #000; color: #00ff00; border: 1px solid; border-color: #14151c #8a8fb0 #8a8fb0 #14151c; border-radius: 0; font-size: 11px; }
-[data-skin='winamp'] .chip { background: #000; color: #00ff00; border-radius: 0; }
-[data-skin='winamp'] .t-title, [data-skin='winamp'] .t-section { letter-spacing: 0.04em; }
-[data-skin='winamp'] .dot { border-radius: 0; }

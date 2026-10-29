@@ -9,6 +9,7 @@ export function loadSettings(file: string): Settings {
     const raw = JSON.parse(readFileSync(file, 'utf8')) as Partial<Settings> & { hideWatchedMovies?: boolean }
     const { hideWatchedMovies, ...rest } = raw
     if ((rest.skin as string) === 'macos') rest.skin = 'classicmac' // renamed together with the skin's redesign // renamed in 0.9.13 when the setting started covering shows too
+    if (rest.skin !== undefined && rest.skin !== 'default' && rest.skin !== 'classicmac') rest.skin = 'default' // skins that were removed (Windows XP, Winamp)
     return { ...DEFAULT_SETTINGS, ...rest, hideWatchedOnHome: rest.hideWatchedOnHome ?? hideWatchedMovies ?? false }
   } catch {
     return { ...DEFAULT_SETTINGS }
