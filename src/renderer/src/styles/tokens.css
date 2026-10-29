@@ -25,6 +25,7 @@
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
   --shadow-2: 0 8px 32px rgba(0, 0, 0, 0.5);
 
+  --shade: 14, 17, 22; /* rgb of the veil laid over hero and backdrop images (dark skins: ink; light skins: paper) */
   --sidebar-w: 224px;
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 

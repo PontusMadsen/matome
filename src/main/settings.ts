@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import type { Settings } from '@shared/types'
 
-export const DEFAULT_SETTINGS: Settings = { excludedServers: [], maxBitrateKbps: 0, useMpv: false, autoSkipIntro: false, playbackSpeed: 1, audioBoostPct: 0, subScale: 1, hideWatchedOnHome: false }
+export const DEFAULT_SETTINGS: Settings = { excludedServers: [], maxBitrateKbps: 0, useMpv: false, autoSkipIntro: false, playbackSpeed: 1, audioBoostPct: 0, subScale: 1, hideWatchedOnHome: false, skin: 'default' }
 
 export function loadSettings(file: string): Settings {
   if (!existsSync(file)) return { ...DEFAULT_SETTINGS }

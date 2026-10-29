@@ -191,6 +191,8 @@ export interface ContinueItem {
   titleId?: string
 }
 
+export type SkinId = 'default' | 'xp' | 'macos' | 'winamp'
+
 export interface Settings {
   excludedServers: string[]
   /** 0 = original / no cap */
@@ -205,6 +207,8 @@ export interface Settings {
   subScale: number
   /** Home screen: leave titles you've already watched out of "Recently added movies" and "Recently added shows" */
   hideWatchedOnHome: boolean
+  /** look of the app; see src/renderer/src/styles/skins.css */
+  skin: SkinId
 }
 
 export interface MpvRequest {

@@ -3,7 +3,7 @@
 .back { position: absolute; top: 44px; left: 32px; z-index: 3; }
 .backdrop { position: absolute; top: 0; left: 0; right: 0; height: 520px; overflow: hidden; z-index: 0; background: var(--s1); }
 .backdrop img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; opacity: .55; }
-.backdrop::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--bg) 4%, rgba(14,17,22,.55) 55%, rgba(14,17,22,.85)); }
+.backdrop::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--bg) 4%, rgba(var(--shade), .55) 55%, rgba(var(--shade), .85)); }
 .inner { position: relative; z-index: 1; padding: 112px 32px 48px; max-width: 1180px; }
 .head { display: flex; gap: 32px; align-items: flex-end; }
 .poster { view-transition-name: poster; width: 220px; flex: none; aspect-ratio: 2/3; border-radius: var(--r-md); overflow: hidden; background: var(--s2); box-shadow: var(--shadow-2), 0 0 0 1px var(--border) inset; }

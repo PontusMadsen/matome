@@ -6,6 +6,8 @@ import type { MergedTitle } from '@shared/types'
 import s from './App.module.css'
 import { Icon, type IconName } from './components/Icon'
 import logo from './assets/flax-horizontal-dark.svg'
+import logoInk from './assets/flax-horizontal-ink.svg'
+import { applySkin } from './skins'
 import { useServers } from './api'
 import { Detail, type AutoPlay } from './views/Detail'
 import { Home } from './views/Home'
@@ -47,6 +49,8 @@ export function App() {
   const upd = useQuery({ queryKey: ['update'], queryFn: () => window.flax.invoke('update:status', undefined), refetchInterval: 5000 })
   const servers = useServers()
   const [palette, setPalette] = useState(false)
+  const prefs = useQuery({ queryKey: ['settings'], queryFn: () => window.flax.invoke('settings:get', undefined) })
+  useEffect(() => { if (prefs.data) applySkin(prefs.data.skin) }, [prefs.data])
   const openRef = useRef(open)
   openRef.current = open
 
@@ -129,13 +133,14 @@ export function App() {
   return (
     <div className={s.shell}>
       <div className={s.drag} />
-      <nav className={s.sidebar}>
+      <nav className={s.sidebar} data-ui="sidebar">
         {/* Horizontal lockup, 124px wide: above the 110px minimum in the brand guidelines. */}
-        <img className={s.logo} src={logo} alt="Fläx" draggable={false} />
+        <img className={s.logo} data-logo="light-on-dark" src={logo} alt="Fläx" draggable={false} />
+        <img className={s.logo} data-logo="dark-on-light" src={logoInk} alt="" aria-hidden draggable={false} />
         <div className={s.navlist}>
-          <div className={`${s.ind} ${open || view === 'Server' ? s.indoff : ''}`} style={{ '--i': idx } as React.CSSProperties} />
+          <div data-ui="ind" className={`${s.ind} ${open || view === 'Server' ? s.indoff : ''}`} style={{ '--i': idx } as React.CSSProperties} />
           {NAV.map(({ v, icon }) => (
-            <button key={v} className={`${s.nav} ${v === view && !open ? s.active : ''}`} onClick={() => go(v)}>
+            <button key={v} data-ui="nav" data-active={v === view && !open} className={`${s.nav} ${v === view && !open ? s.active : ''}`} onClick={() => go(v)}>
               <Icon name={icon} />
               {v}
               {v === 'Search' && <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-faint)' }}>⌘K</span>}
@@ -143,7 +148,7 @@ export function App() {
           ))}
         </div>
         <div className={s.spacer} />
-        <div className={s.servers}>
+        <div className={s.servers} data-ui="servers">
           <div className={s.srvh}>Servers</div>
           {(servers.data ?? []).map((sv) => (
             <button key={sv.id} className={`${s.srv} ${s.srvbtn} ${view === 'Server' && srv === sv.id && !open ? s.srvon : ''}`} title={sv.online ? `${sv.latencyMs} ms · browse this server` : 'offline'} onClick={() => goServer(sv.id)}>
@@ -168,7 +173,7 @@ export function App() {
           </div>
         )}
         <div key={view} className={`${s.views} enter`}>
-          <header className={s.top}>
+          <header className={s.top} data-ui="top">
             <h1 className="t-title">{view === 'Server' ? (servers.data?.find((x) => x.id === srv)?.name ?? 'Server') : view}</h1>
           </header>
           <div className={s.content}>

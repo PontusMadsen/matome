@@ -4,6 +4,7 @@ import { QUALITY_OPTIONS, type Settings as Prefs } from '@shared/types'
 import { useAuth, useRefresh, useServers } from '../api'
 import { Icon } from '../components/Icon'
 import s from './Settings.module.css'
+import { SKINS, applySkin } from '../skins'
 import { ScrollPage } from '../components/ScrollPage'
 
 function ago(ms?: number): string {
@@ -111,6 +112,21 @@ export function Settings() {
             </div>
           </section>
         )}
+
+        <section className={s.card}>
+          <h2>Appearance</h2>
+          <div className={s.skins} role="radiogroup" aria-label="Skin">
+            {SKINS.map((k) => (
+              <button key={k.id} role="radio" aria-checked={(prefs?.skin ?? 'default') === k.id} className={`${s.skin} ${(prefs?.skin ?? 'default') === k.id ? s.skinOn : ''}`} onClick={() => { applySkin(k.id); if (prefs) void save({ ...prefs, skin: k.id }) }}>
+                <span className={s.swatch} aria-hidden>
+                  <i style={{ background: k.swatch[0] }} /><i style={{ background: k.swatch[1] }} /><i style={{ background: k.swatch[2] }} />
+                </span>
+                <span className={s.skinname}>{k.name}</span>
+                <span className={s.skinblurb}>{k.blurb}</span>
+              </button>
+            ))}
+          </div>
+        </section>
 
         <section className={s.card}>
           <h2>Home screen</h2>

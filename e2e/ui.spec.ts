@@ -286,6 +286,18 @@ test('setting: hide watched titles also hides finished shows in Recently added s
   await expect(recent.locator('[data-tid="show:0"]')).toHaveCount(0)
 })
 
+test('skin chooser: switches the look at once and keeps it', async ({ page }) => {
+  await page.getByRole('button', { name: 'Settings' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-skin', 'default')
+  for (const [name, id] of [['Windows XP', 'xp'], ['macOS', 'macos'], ['Winamp', 'winamp'], ['Default', 'default']] as const) {
+    await page.getByRole('radio', { name: new RegExp(`^${name}`) }).click()
+    await expect(page.locator('html')).toHaveAttribute('data-skin', id)
+    await expect(page.getByRole('radio', { name: new RegExp(`^${name}`) })).toHaveAttribute('aria-checked', 'true')
+  }
+  await page.getByRole('radio', { name: /^Winamp/ }).click()
+  expect(await page.evaluate(() => localStorage.getItem('flax-skin'))).toBe('winamp') // remembered so the next launch paints with it from the first frame
+})
+
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {
   const heroes = page.getByTestId('continue-hero')
   for (const [width, expected] of [[820, 1], [1360, 2], [1920, 3]] as const) {
