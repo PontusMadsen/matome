@@ -1,5 +1,6 @@
 // Plex Discover / Watchlist. Endpoints per docs in PLAN.md (discover.provider.plex.tv).
 import { hosts } from './endpoints'
+import { posterUrl } from '../remote-image'
 import { plexFetch, type ClientIdentity } from './client'
 import type { DiscoverItem, MediaType } from '@shared/types'
 
@@ -8,7 +9,7 @@ interface DContainer { MediaContainer: { size?: number; totalSize?: number; Meta
 
 const toItem = (m: DMeta): DiscoverItem | null =>
   m.type === 'movie' || m.type === 'show'
-    ? { ratingKey: m.ratingKey, title: m.title, year: m.year, type: m.type as MediaType, poster: m.thumb, summary: m.summary }
+    ? { ratingKey: m.ratingKey, title: m.title, year: m.year, type: m.type as MediaType, poster: posterUrl(m.thumb), summary: m.summary }
     : null
 
 const nonNull = <T>(x: T | null): x is T => x !== null

@@ -246,8 +246,8 @@ test('setting: hide watched movies keeps them out of Recently added movies on Ho
   const recent = page.locator('section', { has: page.getByRole('heading', { name: 'Recently added movies' }) })
   await expect(recent.locator('[data-tid="movie:0"]')).toBeVisible() // movie:0 is watched
   await page.getByRole('button', { name: 'Settings' }).click()
-  await page.getByLabel('Hide watched movies on Home').click()
-  await expect(page.getByLabel('Hide watched movies on Home')).toBeChecked()
+  await page.getByLabel('Hide watched titles on Home').click()
+  await expect(page.getByLabel('Hide watched titles on Home')).toBeChecked()
   await page.getByRole('button', { name: 'Home', exact: true }).click()
   await settle(page)
   await expect(recent.locator('[data-tid="movie:1"]')).toBeVisible()
@@ -262,6 +262,28 @@ test('detail shows the IMDb and Rotten Tomatoes scores Plex provides', async ({ 
   await expect(page.getByTitle(/Rotten Tomatoes critics/)).toContainText('96%')
   await expect(page.getByTitle(/Rotten Tomatoes audience/)).toContainText('88%')
   await expect(page.getByTitle(/Rating stored by Plex/)).toHaveCount(0) // the unlabeled star gives way to the real scores
+})
+
+test('marking a title watched removes it from Continue Watching at once', async ({ page }) => {
+  await expect(page.getByRole('heading', { name: 'Ted Lasso' })).toBeVisible()
+  await page.getByRole('button', { name: 'Details' }).nth(1).click() // Ted Lasso: still has unwatched episodes
+  await page.getByRole('button', { name: 'Watched', exact: true }).click()
+  await page.getByRole('button', { name: 'Back', exact: true }).click()
+  await settle(page)
+  await expect(page.getByRole('heading', { name: 'Ted Lasso' })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Slow Horses' })).toBeVisible()
+})
+
+test('setting: hide watched titles also hides finished shows in Recently added shows', async ({ page }) => {
+  const recent = page.locator('section', { has: page.getByRole('heading', { name: 'Recently added shows' }) })
+  await expect(recent.locator('[data-tid="show:0"]')).toBeVisible() // show:0 has 0 unwatched episodes
+  await page.getByRole('button', { name: 'Settings' }).click()
+  await page.getByLabel('Hide watched titles on Home').click()
+  await expect(page.getByLabel('Hide watched titles on Home')).toBeChecked()
+  await page.getByRole('button', { name: 'Home', exact: true }).click()
+  await settle(page)
+  await expect(recent.locator('[data-tid="show:1"]')).toBeVisible() // 3 unwatched
+  await expect(recent.locator('[data-tid="show:0"]')).toHaveCount(0)
 })
 
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {

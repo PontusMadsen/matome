@@ -1,3 +1,4 @@
+import { fetchRemoteImage } from './remote-image'
 import { app, protocol, type IpcMain } from 'electron'
 import type { IpcChannel, IpcChannels } from '@shared/ipc'
 import { log, scrub } from './log'
@@ -61,7 +62,10 @@ export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
   // flax-img://<serverId>/<plex path> -> authenticated fetch in main
   protocol.handle('flax-img', async (request) => {
     const u = new URL(request.url)
-    const img = await svc.image(u.hostname, u.pathname + u.search).catch(() => null)
-    return img ? new Response(new Uint8Array(img.data), { headers: { 'content-type': img.type } }) : new Response(null, { status: 404 })
+    const img =
+      u.hostname === 'remote' ? await fetchRemoteImage(decodeURIComponent(u.pathname.slice(1))).catch(() => null)
+      : u.hostname === 'discover' ? await svc.discoverImage(u.pathname + u.search).catch(() => null)
+      : await svc.image(u.hostname, u.pathname + u.search).catch(() => null)
+    return img ? new Response(new Uint8Array(img.data), { headers: { 'content-type': img.type, 'cache-control': 'public, max-age=86400' } }) : new Response(null, { status: 404 })
   })
 }

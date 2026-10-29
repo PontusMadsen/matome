@@ -14,6 +14,7 @@ export function Home({ onOpen }: { onOpen: (t: MergedTitle, el?: HTMLElement | n
   const shows = useLibrary('show')
   const [play, setPlay] = useState<PlayTarget | null>(null)
   const prefs = useQuery({ queryKey: ['settings'], queryFn: () => window.flax.invoke('settings:get', undefined) })
+  const hide = prefs.data?.hideWatchedOnHome ?? false
   const byId = useMemo(() => new Map([...(movies.data ?? []), ...(shows.data ?? [])].map((t) => [t.id, t])), [movies.data, shows.data])
   const recent = (xs: MergedTitle[] = []) => [...xs].sort((a, b) => b.addedAt - a.addedAt).slice(0, 24)
 
@@ -109,10 +110,10 @@ export function Home({ onOpen }: { onOpen: (t: MergedTitle, el?: HTMLElement | n
       ) : (
         <>
           <Shelf title="Recently added movies" hint="across all servers">
-            <RecentRow items={recent(prefs.data?.hideWatchedMovies ? (movies.data ?? []).filter((t) => !t.watched) : movies.data)} onOpen={onOpen} />
+            <RecentRow items={recent(hide ? (movies.data ?? []).filter((t) => !t.watched) : movies.data)} onOpen={onOpen} />
           </Shelf>
           <Shelf title="Recently added shows" hint="across all servers">
-            <RecentRow items={recent(shows.data)} onOpen={onOpen} />
+            <RecentRow items={recent(hide ? (shows.data ?? []).filter((t) => t.unwatchedCount > 0) : shows.data)} onOpen={onOpen} />
           </Shelf>
         </>
       )}

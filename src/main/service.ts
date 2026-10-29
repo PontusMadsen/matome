@@ -8,6 +8,8 @@ import { getItem, loadItems, upsertItems, type Db } from './db'
 import { applyLive } from './live'
 import { loadSettings, saveSettings } from './settings'
 import { mergeItems, normTitle } from './merge'
+import { fetchRemoteImage } from './remote-image'
+import { hosts } from './plex/endpoints'
 import { createHash, randomUUID } from 'node:crypto'
 import { log, scrub } from './log'
 import { looksLikeSubtitles, subtitleCandidates } from '@shared/subtitles'
@@ -268,6 +270,12 @@ export class Service {
     return Math.max(0, ...each)
   }
 
+  /** Poster the Discover service serves by relative path (needs the account token). */
+  async discoverImage(path: string): Promise<{ data: ArrayBuffer; type: string } | null> {
+    if (!this.token) return null
+    return fetchRemoteImage(`${hosts.discover}${path}`, { 'X-Plex-Token': this.token, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Flax' })
+  }
+
   async setWatchlist(ratingKey: string, on: boolean): Promise<void> {
     if (!this.token) return
     try {
@@ -296,6 +304,7 @@ export class Service {
   /** Mark watched/unwatched on every reachable source so merged state stays consistent. */
   async setWatched(id: string, watched: boolean): Promise<void> {
     const t = this.find(id)
+    if (watched) this.dropFromContinue((c) => c.titleId === id || t.sources.some((x) => x.serverId === c.serverId && x.ratingKey === c.ratingKey))
     await Promise.all(this.usable(t).map((u) => this.ping(u.info.id, (watched ? scrobblePath : unscrobblePath)(u.ratingKey))))
     await this.refreshTitle(id)
   }
@@ -303,7 +312,16 @@ export class Service {
   /** Mark one episode watched/unwatched on every server that has it, then refresh the show's counts. */
   async setEpisodeWatched(titleId: string, sources: { serverId: string; ratingKey: string }[], watched: boolean): Promise<void> {
     await Promise.all(sources.map((x) => this.ping(x.serverId, (watched ? scrobblePath : unscrobblePath)(x.ratingKey))))
+    if (watched) this.dropFromContinue((c) => sources.some((x) => x.serverId === c.serverId && x.ratingKey === c.ratingKey))
     await this.refreshTitle(titleId)
+  }
+
+  /** Finished things leave Continue Watching right away instead of waiting for the next refresh. */
+  private dropFromContinue(match: (c: ContinueItem) => boolean): void {
+    const list = this.cachedContinue()
+    if (!list) return
+    this.continueCache = list.filter((c) => !match(c))
+    try { writeFileSync(this.continueFile(), JSON.stringify(this.continueCache)) } catch { /* cache only */ }
   }
 
   async rate(id: string, rating: number | null): Promise<void> {

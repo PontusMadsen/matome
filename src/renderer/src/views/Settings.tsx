@@ -115,8 +115,8 @@ export function Settings() {
         <section className={s.card}>
           <h2>Home screen</h2>
           <div className={s.row}>
-            <div className={s.grow}><div className={s.label}>Hide watched movies</div><div className={s.hint}>"Recently added movies" skips movies you have already watched, on any server.</div></div>
-            <input type="checkbox" className={s.switch} aria-label="Hide watched movies on Home" checked={prefs?.hideWatchedMovies ?? false} onChange={(e) => prefs && void save({ ...prefs, hideWatchedMovies: e.target.checked })} />
+            <div className={s.grow}><div className={s.label}>Hide watched titles</div><div className={s.hint}>"Recently added movies" and "Recently added shows" skip what you have already watched, on any server.</div></div>
+            <input type="checkbox" className={s.switch} aria-label="Hide watched titles on Home" checked={prefs?.hideWatchedOnHome ?? false} onChange={(e) => prefs && void save({ ...prefs, hideWatchedOnHome: e.target.checked })} />
           </div>
         </section>
 

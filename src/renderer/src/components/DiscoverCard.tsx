@@ -10,6 +10,7 @@ import s from './Grid.module.css'
 export function DiscoverCard({ d, onOpenLocal }: { d: DiscoverItem; onOpenLocal: (titleId: string) => void }) {
   const qc = useQueryClient()
   const [err, setErr] = useState('')
+  const [broken, setBroken] = useState(false)
   const toggle = async () => {
     setErr('')
     // Removing: take the card off the list right away (the Discover service lags a few seconds), put it back if the server refuses.
@@ -36,7 +37,7 @@ export function DiscoverCard({ d, onOpenLocal }: { d: DiscoverItem; onOpenLocal:
     <div className={s.card} onContextMenu={onContextMenu}>
       {menu}
       <div className={s.poster} style={{ cursor: d.availableAs ? 'pointer' : 'default' }} onClick={() => d.availableAs && onOpenLocal(d.availableAs)}>
-        {d.poster ? <img src={d.poster} alt="" loading="lazy" /> : <div className={s.fallback}>{d.title}</div>}
+        {d.poster && !broken ? <img src={d.poster} alt="" loading="lazy" onError={() => setBroken(true)} /> : <div className={s.fallback}>{d.title}</div>}
         {!d.availableAs && <span className={s.pill} style={{ background: 'var(--s4)', color: 'var(--text-dim)' }}>Not on servers</span>}
       </div>
       <div className={s.name}>{d.title}</div>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useContextMenu, type MenuItem } from './ContextMenu'
-import { useWatchlist } from '../api'
+import { refreshContinue, useWatchlist } from '../api'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ContinueItem, MergedTitle } from '@shared/types'
 import { Icon } from './Icon'
@@ -34,7 +34,7 @@ export function Card({ t, onOpen, progress, index }: { t: MergedTitle; onOpen?: 
     { label: 'Open', onSelect: () => onOpen?.(t) },
     {
       label: isWatched ? 'Mark as unwatched' : 'Mark as watched',
-      onSelect: () => void window.flax.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => qc.invalidateQueries({ queryKey: ['library'] })),
+      onSelect: () => void window.flax.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), refreshContinue(qc)])),
     },
     ]
     const refresh = () => Promise.all([qc.invalidateQueries({ queryKey: ['watchlist'] }), qc.invalidateQueries({ queryKey: ['search'] })])

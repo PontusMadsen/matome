@@ -5,6 +5,7 @@ import { Icon } from '../components/Icon'
 import { useContextMenu } from '../components/ContextMenu'
 import { Player, type PlayTarget } from '../components/Player'
 import { ScrollPage } from '../components/ScrollPage'
+import { refreshContinue } from '../api'
 import s from './Detail.module.css'
 
 const qLabel = (x: Source) =>
@@ -56,8 +57,8 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
   const [play, setPlay] = useState<PlayTarget | null>(null)
   const [pick, setPick] = useState(0)
   const qc = useQueryClient()
-  const refreshAll = () => window.flax.invoke('title:refresh', { id: t.id }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), qc.invalidateQueries({ queryKey: ['episodes'] })]))
-  const act = (p: Promise<unknown>) => p.then(() => qc.invalidateQueries({ queryKey: ['library'] }))
+  const refreshAll = () => window.flax.invoke('title:refresh', { id: t.id }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), qc.invalidateQueries({ queryKey: ['episodes'] }), refreshContinue(qc)]))
+  const act = (p: Promise<unknown>) => p.then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), refreshContinue(qc)]))
   // Newest season first; Specials (season 0) last. Opens on the newest season.
   const seasons = [...(data?.seasons ?? [])].sort((a, b) => (a.index === 0 ? 1 : b.index === 0 ? -1 : b.index - a.index))
   useEffect(() => { if (seasons[0] && season === null) setSeason(seasons[0].index) }, [data, season])

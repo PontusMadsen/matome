@@ -1,12 +1,14 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import type { Settings } from '@shared/types'
 
-export const DEFAULT_SETTINGS: Settings = { excludedServers: [], maxBitrateKbps: 0, useMpv: false, autoSkipIntro: false, playbackSpeed: 1, audioBoostPct: 0, subScale: 1, hideWatchedMovies: false }
+export const DEFAULT_SETTINGS: Settings = { excludedServers: [], maxBitrateKbps: 0, useMpv: false, autoSkipIntro: false, playbackSpeed: 1, audioBoostPct: 0, subScale: 1, hideWatchedOnHome: false }
 
 export function loadSettings(file: string): Settings {
   if (!existsSync(file)) return { ...DEFAULT_SETTINGS }
   try {
-    return { ...DEFAULT_SETTINGS, ...(JSON.parse(readFileSync(file, 'utf8')) as Partial<Settings>) }
+    const raw = JSON.parse(readFileSync(file, 'utf8')) as Partial<Settings> & { hideWatchedMovies?: boolean }
+    const { hideWatchedMovies, ...rest } = raw // renamed in 0.9.13 when the setting started covering shows too
+    return { ...DEFAULT_SETTINGS, ...rest, hideWatchedOnHome: rest.hideWatchedOnHome ?? hideWatchedMovies ?? false }
   } catch {
     return { ...DEFAULT_SETTINGS }
   }

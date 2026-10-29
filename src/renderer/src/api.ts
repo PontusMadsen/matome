@@ -41,6 +41,11 @@ export function useContinue() {
 }
 /** Titles removed this session: Plex's Discover service can keep listing them for a while, so they stay hidden until it stops. */
 export const removedFromWatchlist = new Set<string>()
+/** After marking something watched/unwatched: fetch Continue Watching again so finished titles leave it (and unfinished ones return). */
+export function refreshContinue(qc: ReturnType<typeof useQueryClient>): Promise<void> {
+  return window.flax.invoke('home:continue', undefined).then((list) => { qc.setQueryData(['continue'], list) }).then(() => window.flax.invoke('home:continue:refresh', undefined)).then((list) => { qc.setQueryData(['continue'], list) }).catch(() => undefined)
+}
+
 export const useWatchlist = () =>
   useQuery({ queryKey: ['watchlist'], queryFn: () => window.flax.invoke('watchlist:list', undefined), staleTime: 60_000, select: (xs) => xs.filter((x) => !removedFromWatchlist.has(x.ratingKey)) })
 export const useSearch = (query: string) =>
