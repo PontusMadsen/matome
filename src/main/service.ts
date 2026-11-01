@@ -270,6 +270,27 @@ export class Service {
     return Math.max(0, ...each)
   }
 
+  /** The first of these copies whose server is reachable and names a file: where to download it from. */
+  async downloadSource(sources: { serverId: string; ratingKey: string }[]): Promise<{ url: string; headers: Record<string, string>; container?: string }> {
+    let lastError: unknown
+    for (const x of sources) {
+      const info = this.infos.find((i) => i.id === x.serverId)
+      const cred = this.creds.get(x.serverId)
+      if (!info?.baseUrl || !info.online || !cred) continue
+      try {
+        const d = await fetchDetail(this.id, info, cred.accessToken, x.ratingKey)
+        const part = d.Media?.[0]?.Part?.[0]
+        if (!part?.key) continue
+        const container = part.container ?? d.Media?.[0]?.container ?? part.file?.split('.').pop()
+        // `download=1` is the same request Plex Web's Download uses; the server decides whether this account may.
+        return { url: `${info.baseUrl}${part.key}?download=1`, headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Flax' }, container }
+      } catch (e) {
+        lastError = e
+      }
+    }
+    throw new Error(lastError instanceof Error ? 'No server could provide the file right now.' : 'None of the servers holding this title is online.')
+  }
+
   /** Poster the Discover service serves by relative path (needs the account token). */
   async discoverImage(path: string): Promise<{ data: ArrayBuffer; type: string } | null> {
     if (!this.token) return null

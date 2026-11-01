@@ -22,6 +22,7 @@ export function installMock(): void {
       { key: 'k3', title: 'Dune', serverId: 'a', ratingKey: '7', viewOffsetMs: 1_000_000, durationMs: 9_000_000, lastViewedAt: 7, titleId: 'movie:9', art: svg(1600, 700, 2, '') },
       { key: 'k4', title: 'Lupin', subtitle: 'S3E4 · Episode 4', serverId: 'a', ratingKey: '6', season: 3, episode: 4, viewOffsetMs: 300_000, durationMs: 3_000_000, lastViewedAt: 6, art: svg(1600, 700, 3, '') },
       ...Array.from({ length: 10 }, (_, i) => ({ key: `x${i}`, title: `Extra ${i}`, serverId: 'a', ratingKey: `x${i}`, viewOffsetMs: 100_000, durationMs: 3_000_000, lastViewedAt: 5 - i }))]
+  let dls: { id: string; title: string; state: string; received: number; total: number; path: string; error?: string }[] = []
   let prefs = { excludedServers: [] as string[], maxBitrateKbps: 2000, useMpv: false, autoSkipIntro: false, playbackSpeed: 1, audioBoostPct: 0, subScale: 1, hideWatchedOnHome: false, skin: 'default' as string }
   const movies = mk('movie')
   const shows = mk('show')
@@ -47,6 +48,10 @@ export function installMock(): void {
     'playlists:list': () => [],
     // Like the live service, the list keeps returning an item for a while after it was removed.
     'title:setWatched': (r: { id: string; watched: boolean }) => { if (r.watched) cont = cont.filter((c) => c.titleId !== r.id) },
+    'download:start': (r: { title: string }) => { dls = [{ id: 'd1', title: r.title, state: 'active', received: 450_000_000, total: 1_800_000_000, path: '/x' }, ...dls]; return { id: 'd1' } },
+    'download:list': () => dls,
+    'download:cancel': () => { dls = dls.map((d) => ({ ...d, state: 'canceled' })) },
+    'download:clear': () => { dls = dls.filter((d) => d.state === 'active') },
     'play:resumePoint': () => (window as any).__resume ?? 0,
     'title:addToWatchlist': () => undefined,
     'watchlist:list': () => [

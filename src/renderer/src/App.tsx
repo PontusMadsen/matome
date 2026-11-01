@@ -18,6 +18,7 @@ import { Watchlist } from './views/Watchlist'
 import { Collections } from './views/Collections'
 import { ServerView } from './views/ServerView'
 import { CommandPalette } from './components/CommandPalette'
+import { DownloadsTray } from './components/DownloadsTray'
 
 const NAV = [
   { v: 'Home', icon: 'home' },
@@ -194,6 +195,7 @@ export function App() {
         )}
       </main>
       <CommandPalette open={palette} onClose={() => setPalette(false)} onOpenTitle={(t) => openTitle(t)} onSeeAll={() => go('Search')} />
+      <DownloadsTray />
     </div>
   )
 }

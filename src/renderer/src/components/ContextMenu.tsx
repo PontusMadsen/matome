@@ -41,7 +41,7 @@ export function useContextMenu(items: () => MenuItem[]): { onContextMenu: (e: Re
     },
     menu: pos
       ? createPortal(
-          <div className={s.menu} style={{ left: pos.x, top: pos.y }} role="menu" onContextMenu={(e) => e.preventDefault()}>
+          <div className={s.menu} style={{ left: pos.x, top: pos.y }} role="menu" onContextMenu={(e) => e.preventDefault()} onClick={(e) => e.stopPropagation()} /* the menu is rendered inside its card: without this a click on an item would also open the card */>
             {pos.items.map((it) => (
               <button key={it.label} role="menuitem" className={`${s.item} ${it.danger ? s.danger : ''}`} onClick={() => { setPos(null); it.onSelect() }}>
                 {it.label}

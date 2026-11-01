@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useContextMenu, type MenuItem } from './ContextMenu'
-import { refreshContinue, useWatchlist } from '../api'
+import { refreshContinue, startDownload, useWatchlist } from '../api'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ContinueItem, MergedTitle } from '@shared/types'
 import { Icon } from './Icon'
@@ -37,6 +37,7 @@ export function Card({ t, onOpen, progress, index }: { t: MergedTitle; onOpen?: 
       onSelect: () => void window.flax.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), refreshContinue(qc)])),
     },
     ]
+    if (t.type === 'movie') items.push({ label: 'Download…', onSelect: () => startDownload(t.title, t.year, t.sources) })
     const refresh = () => Promise.all([qc.invalidateQueries({ queryKey: ['watchlist'] }), qc.invalidateQueries({ queryKey: ['search'] })])
     items.push(
       onList

@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon'
 import { useContextMenu } from '../components/ContextMenu'
 import { Player, type PlayTarget } from '../components/Player'
 import { ScrollPage } from '../components/ScrollPage'
-import { refreshContinue } from '../api'
+import { refreshContinue, startDownload } from '../api'
 import s from './Detail.module.css'
 
 const qLabel = (x: Source) =>
@@ -20,6 +20,7 @@ const fmtDur = (ms?: number) => (ms ? (ms >= 3_600_000 ? `${Math.floor(ms / 3_60
 function Episode({ e, t, onPlay, onChanged }: { e: MergedEpisode; t: MergedTitle; onPlay: () => void; onChanged: () => void }) {
   const { onContextMenu, openMenu, menu } = useContextMenu(() => [
     { label: 'Play', onSelect: onPlay },
+    { label: 'Download…', onSelect: () => startDownload(`${t.title} - S${String(e.season).padStart(2, '0')}E${String(e.episode).padStart(2, '0')} - ${e.title}`, undefined, e.sources) },
     {
       label: e.watched ? 'Mark as unwatched' : 'Mark as watched',
       onSelect: () => void window.flax.invoke('episode:setWatched', { titleId: t.id, sources: e.sources.map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })), watched: !e.watched }).then(onChanged),
@@ -183,6 +184,11 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
               >
                 <Icon name="check" size={16} /> Watched
               </button>
+              {t.type === 'movie' && (
+                <button className="btn btn-lg" title="Save the original file to this Mac" onClick={() => startDownload(t.title, t.year, t.sources)}>
+                  <Icon name="download" size={16} /> Download
+                </button>
+              )}
               <select aria-label="Your rating" defaultValue="" onChange={(e) => void act(window.flax.invoke('title:rate', { id: t.id, rating: e.target.value === '' ? null : Number(e.target.value) }))}>
                 <option value="">Rate…</option>
                 {[2, 4, 6, 8, 10].map((r) => <option key={r} value={r}>{'★'.repeat(r / 2)}</option>)}
