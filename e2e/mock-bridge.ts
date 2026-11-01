@@ -22,7 +22,12 @@ export function installMock(): void {
       { key: 'k3', title: 'Dune', serverId: 'a', ratingKey: '7', viewOffsetMs: 1_000_000, durationMs: 9_000_000, lastViewedAt: 7, titleId: 'movie:9', art: svg(1600, 700, 2, '') },
       { key: 'k4', title: 'Lupin', subtitle: 'S3E4 · Episode 4', serverId: 'a', ratingKey: '6', season: 3, episode: 4, viewOffsetMs: 300_000, durationMs: 3_000_000, lastViewedAt: 6, art: svg(1600, 700, 3, '') },
       ...Array.from({ length: 10 }, (_, i) => ({ key: `x${i}`, title: `Extra ${i}`, serverId: 'a', ratingKey: `x${i}`, viewOffsetMs: 100_000, durationMs: 3_000_000, lastViewedAt: 5 - i }))]
-  let dls: { id: string; title: string; state: string; received: number; total: number; path: string; error?: string }[] = []
+  type Dl = { id: string; title: string; meta: unknown; state: string; received: number; total: number; path: string; createdAt: number; fresh?: boolean; hasPoster?: boolean; error?: string }
+  let dls: Dl[] = [
+    { id: 'o1', title: 'Dune (2021)', meta: { kind: 'movie', name: 'Dune', year: 2021 }, state: 'done', received: 2_400_000_000, total: 2_400_000_000, path: '/x/Dune.mkv', createdAt: 5 },
+    { id: 'o2', title: 'Slow Horses - S03E02 - Episode 2', meta: { kind: 'episode', name: 'Episode 2', show: 'Slow Horses', season: 3, episode: 2 }, state: 'done', received: 900_000_000, total: 900_000_000, path: '/x/e2.mkv', createdAt: 4 },
+    { id: 'o3', title: 'Slow Horses - S03E03 - Episode 3', meta: { kind: 'episode', name: 'Episode 3', show: 'Slow Horses', season: 3, episode: 3 }, state: 'done', received: 880_000_000, total: 880_000_000, path: '/x/e3.mkv', createdAt: 3 },
+  ]
   let prefs = { excludedServers: [] as string[], maxBitrateKbps: 2000, useMpv: false, autoSkipIntro: false, playbackSpeed: 1, audioBoostPct: 0, subScale: 1, hideWatchedOnHome: false, skin: 'default' as string }
   const movies = mk('movie')
   const shows = mk('show')
@@ -48,10 +53,13 @@ export function installMock(): void {
     'playlists:list': () => [],
     // Like the live service, the list keeps returning an item for a while after it was removed.
     'title:setWatched': (r: { id: string; watched: boolean }) => { if (r.watched) cont = cont.filter((c) => c.titleId !== r.id) },
-    'download:start': (r: { title: string }) => { dls = [{ id: 'd1', title: r.title, state: 'active', received: 450_000_000, total: 1_800_000_000, path: '/x' }, ...dls]; return { id: 'd1' } },
+    'download:start': (r: { title: string }) => { dls = [{ id: 'd1', title: r.title, meta: { kind: 'movie', name: r.title }, state: 'active', received: 450_000_000, total: 1_800_000_000, path: '/x', createdAt: 9 }, ...dls]; return { id: 'd1' } },
     'download:list': () => dls,
-    'download:cancel': () => { dls = dls.map((d) => ({ ...d, state: 'canceled' })) },
-    'download:clear': () => { dls = dls.filter((d) => d.state === 'active') },
+    'download:cancel': () => { dls = dls.map((d) => (d.state === 'active' ? { ...d, state: 'canceled' } : d)) },
+    'download:clear': () => { dls = dls.filter((d) => d.state === 'active' || d.state === 'done').map((d) => ({ ...d, fresh: false })) },
+    'download:remove': (r: { id: string }) => { dls = dls.filter((d) => d.id !== r.id) },
+    'download:open': () => undefined,
+    'download:position': () => undefined,
     'play:resumePoint': () => (window as any).__resume ?? 0,
     'title:addToWatchlist': () => undefined,
     'watchlist:list': () => [

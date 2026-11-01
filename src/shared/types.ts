@@ -278,13 +278,32 @@ export const QUALITY_OPTIONS: { kbps: number; label: string }[] = [
   { kbps: 1000, label: '1 Mbps' },
 ]
 
+export interface DownloadMeta {
+  kind: 'movie' | 'episode'
+  /** movie title, or the episode's own title */
+  name: string
+  year?: number
+  /** episodes: the show */
+  show?: string
+  season?: number
+  episode?: number
+}
+
 export interface DownloadInfo {
   id: string
+  /** display title, e.g. "Dune (2021)" or "Slow Horses - S03E02 - Episode 2" */
   title: string
+  meta: DownloadMeta
   state: 'active' | 'done' | 'error' | 'canceled'
   received: number
   /** 0 when the server did not say */
   total: number
   path: string
   error?: string
+  createdAt: number
+  /** finished during this session: shown in the tray until dismissed */
+  fresh?: boolean
+  hasPoster?: boolean
+  /** where playback stopped last time (local resume) */
+  positionMs?: number
 }

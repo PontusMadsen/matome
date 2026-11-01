@@ -17,6 +17,7 @@ import { Settings } from './views/Settings'
 import { Watchlist } from './views/Watchlist'
 import { Collections } from './views/Collections'
 import { ServerView } from './views/ServerView'
+import { DownloadedView } from './views/DownloadedView'
 import { CommandPalette } from './components/CommandPalette'
 import { DownloadsTray } from './components/DownloadsTray'
 
@@ -26,6 +27,7 @@ const NAV = [
   { v: 'TV Shows', icon: 'tv' },
   { v: 'Collections', icon: 'stack' },
   { v: 'Watchlist', icon: 'bookmark' },
+  { v: 'Downloaded', icon: 'download' },
   { v: 'Search', icon: 'search' },
   { v: 'Settings', icon: 'settings' },
 ] as const satisfies readonly { v: string; icon: IconName }[]
@@ -183,6 +185,7 @@ export function App() {
             {view === 'TV Shows' && <LibraryView type="show" onOpen={openTitle} />}
             {view === 'Collections' && <Collections onOpen={openTitle} />}
             {view === 'Watchlist' && <Watchlist onOpen={openTitle} />}
+            {view === 'Downloaded' && <DownloadedView />}
             {view === 'Search' && <Search onOpen={openTitle} />}
             {view === 'Server' && srv && <ServerView id={srv} onOpen={openTitle} />}
             {view === 'Settings' && <Settings />}

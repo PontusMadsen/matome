@@ -20,7 +20,7 @@ const fmtDur = (ms?: number) => (ms ? (ms >= 3_600_000 ? `${Math.floor(ms / 3_60
 function Episode({ e, t, onPlay, onChanged }: { e: MergedEpisode; t: MergedTitle; onPlay: () => void; onChanged: () => void }) {
   const { onContextMenu, openMenu, menu } = useContextMenu(() => [
     { label: 'Play', onSelect: onPlay },
-    { label: 'Download…', onSelect: () => startDownload(`${t.title} - S${String(e.season).padStart(2, '0')}E${String(e.episode).padStart(2, '0')} - ${e.title}`, undefined, e.sources) },
+    { label: 'Download…', onSelect: () => startDownload({ title: `${t.title} - S${String(e.season).padStart(2, '0')}E${String(e.episode).padStart(2, '0')} - ${e.title}`, meta: { kind: 'episode', name: e.title, show: t.title, season: e.season, episode: e.episode }, poster: t.posters[0], sources: e.sources }) },
     {
       label: e.watched ? 'Mark as unwatched' : 'Mark as watched',
       onSelect: () => void window.flax.invoke('episode:setWatched', { titleId: t.id, sources: e.sources.map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })), watched: !e.watched }).then(onChanged),
@@ -185,7 +185,7 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
                 <Icon name="check" size={16} /> Watched
               </button>
               {t.type === 'movie' && (
-                <button className="btn btn-lg" title="Save the original file to this Mac" onClick={() => startDownload(t.title, t.year, t.sources)}>
+                <button className="btn btn-lg" title="Save the original file to this Mac" onClick={() => startDownload({ title: t.title, year: t.year, meta: { kind: 'movie', name: t.title, year: t.year }, poster: t.posters[0], sources: t.sources })}>
                   <Icon name="download" size={16} /> Download
                 </button>
               )}

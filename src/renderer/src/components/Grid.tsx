@@ -37,7 +37,7 @@ export function Card({ t, onOpen, progress, index }: { t: MergedTitle; onOpen?: 
       onSelect: () => void window.flax.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), refreshContinue(qc)])),
     },
     ]
-    if (t.type === 'movie') items.push({ label: 'Download…', onSelect: () => startDownload(t.title, t.year, t.sources) })
+    if (t.type === 'movie') items.push({ label: 'Download…', onSelect: () => startDownload({ title: t.title, year: t.year, meta: { kind: 'movie', name: t.title, year: t.year }, poster: t.posters[0], sources: t.sources }) })
     const refresh = () => Promise.all([qc.invalidateQueries({ queryKey: ['watchlist'] }), qc.invalidateQueries({ queryKey: ['search'] })])
     items.push(
       onList

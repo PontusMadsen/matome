@@ -16,6 +16,8 @@ export interface PlayTarget {
   audio: Stream[]
   subtitles: Stream[]
   onNext?: () => void
+  /** a downloaded file: played straight from disk, no server involved (sources stays empty) */
+  local?: { id: string; positionMs?: number }
   /** called after every server's copy has been marked watched */
   onWatched?: () => void
 }
@@ -263,6 +265,33 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
     }
   }, [src, audioId, subId, subMode, compat, kbps, srcIdx, restart, startReady, target.sources.length])
 
+  // Offline: play a downloaded file directly. No transcode, so the whole file is seekable and the clock starts at 0.
+  const local = target.local
+  const localId = local?.id
+  useEffect(() => {
+    const el = video.current
+    if (!localId || !el) return
+    base.current = 0
+    el.src = `flax-local://file/${localId}`
+    const onMeta = () => {
+      const p = safeStartMs(target.local?.positionMs ?? 0, el.duration * 1000)
+      if (p > 0) el.currentTime = p / 1000
+      setWaiting(false)
+      void el.play()
+    }
+    const onErr = () => setError("This file's format can't be played here (try 'Open in default app').")
+    el.addEventListener('loadedmetadata', onMeta, { once: true })
+    el.addEventListener('error', onErr)
+    const save = () => void window.flax.invoke('download:position', { id: localId, ms: abs() })
+    const t = setInterval(save, 10_000)
+    return () => {
+      clearInterval(t)
+      save()
+      el.removeEventListener('loadedmetadata', onMeta)
+      el.removeEventListener('error', onErr)
+    }
+  }, [localId])
+
   // Closing the player (or moving to another episode, which remounts it) frees the server's stream slot.
   useEffect(() => {
     const id = sessionId.current
@@ -481,6 +510,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
         <button className="btn" onClick={onClose}><Icon name="back" size={16} /> Back</button>
         <span className={s.title}>{target.title}</span>
         {error && <span className={s.err}>{error}</span>}
+        {error && local && <button className="btn" onClick={() => void window.flax.invoke('download:open', { id: local.id })}>Open in default app</button>}
         {!error && note && <span className={s.err} style={{ color: 'var(--text)' }}>{note}</span>}
         {target.sources.length > 1 && (
           <select className={s.pill} value={srcIdx} onChange={(e) => { keepPlace(); setSrcIdx(Number(e.target.value)) }} title="Source" aria-label="Source">
@@ -547,9 +577,9 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
               )}
             </select>
           )}
-          <select className={`${s.pill} btn`} value={kbps ?? 0} onChange={(e) => { keepPlace(); setKbps(Number(e.target.value)) }} title="Quality" aria-label="Quality">
+          {!local && <select className={`${s.pill} btn`} value={kbps ?? 0} onChange={(e) => { keepPlace(); setKbps(Number(e.target.value)) }} title="Quality" aria-label="Quality">
             {QUALITY_OPTIONS.map((q) => <option key={q.kbps} value={q.kbps}>{q.label}</option>)}
-          </select>
+          </select>}
           <select className={`${s.pill} btn`} value={rate} onChange={(e) => { const r = Number(e.target.value); setRate(r); if (video.current) video.current.playbackRate = r }} title="Speed" aria-label="Speed">
             {[0.5, 0.75, 1, 1.25, 1.5, 2].map((r) => <option key={r} value={r}>{r}×</option>)}
           </select>

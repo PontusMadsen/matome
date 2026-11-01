@@ -8,7 +8,8 @@ const mb = (n: number) => (n >= 1e9 ? `${(n / 1e9).toFixed(2)} GB` : `${Math.rou
 /** Bottom-right list of downloads: progress, cancel, show in Finder. Appears only while there is something to show. */
 export function DownloadsTray() {
   const qc = useQueryClient()
-  const { data = [] } = useDownloads()
+  // The tray is for what is happening now; the Downloaded section is the library of what is saved.
+  const data = (useDownloads().data ?? []).filter((d) => d.state !== 'done' || d.fresh)
   if (data.length === 0) return null
   const refresh = () => qc.invalidateQueries({ queryKey: ['downloads'] })
   const finished = data.some((d) => d.state !== 'active')

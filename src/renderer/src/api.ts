@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import type { MediaType } from '@shared/types'
+import type { DownloadMeta, MediaType } from '@shared/types'
 
 export const useAuth = () => useQuery({ queryKey: ['auth'], queryFn: () => window.flax.invoke('auth:state', undefined), refetchInterval: 2000 })
 export const useServers = () => useQuery({ queryKey: ['servers'], queryFn: () => window.flax.invoke('servers:list', undefined), refetchInterval: 5000 })
@@ -52,7 +52,10 @@ export const useSearch = (query: string) =>
   useQuery({ queryKey: ['search', query], queryFn: () => window.flax.invoke('search:query', { query }), enabled: query.trim().length > 0, placeholderData: (p) => p })
 
 /** Start a download of the original file into the app's own Downloads folder. Errors are shown as a message. */
-export function startDownload(title: string, year: number | undefined, sources: { serverId: string; ratingKey: string; online?: boolean }[]): void {
-  void window.flax.invoke('download:start', { title, year, sources: sources.filter((x) => x.online !== false).map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })) }).then(() => undefined).catch((e: Error) => window.alert(e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '')))
+export function startDownload(o: { title: string; year?: number; meta: DownloadMeta; poster?: string; sources: { serverId: string; ratingKey: string; online?: boolean }[] }): void {
+  void window.flax
+    .invoke('download:start', { title: o.title, year: o.year, meta: o.meta, poster: o.poster, sources: o.sources.filter((x) => x.online !== false).map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })) })
+    .then(() => undefined)
+    .catch((e: Error) => window.alert(e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '')))
 }
 export const useDownloads = () => useQuery({ queryKey: ['downloads'], queryFn: () => window.flax.invoke('download:list', undefined), refetchInterval: 1000 })
