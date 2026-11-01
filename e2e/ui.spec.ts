@@ -298,6 +298,27 @@ test('skin chooser: switches the look at once and keeps it', async ({ page }) =>
   expect(await page.evaluate(() => localStorage.getItem('flax-skin'))).toBe('classicmac') // remembered so the next launch paints with it from the first frame
 })
 
+test('download: movie menu and title page offer it, progress shows in the tray and can be cancelled', async ({ page }) => {
+  await page.getByRole('button', { name: 'Movies' }).click()
+  await settle(page)
+  await page.locator('[data-tid]').first().getByRole('button', { name: /^More for/ }).click()
+  await page.getByRole('menuitem', { name: 'Download…' }).click()
+  await expect(page.getByRole('button', { name: 'Back', exact: true })).toHaveCount(0) // choosing a menu item must not also open the card behind it
+  const tray = page.getByRole('complementary', { name: 'Downloads' })
+  await expect(tray).toContainText('Slow Horses')
+  await expect(tray).toContainText('450 MB of 1.80 GB')
+  const start = await page.evaluate(() => (window as any).__calls.find((c: any) => c.c === 'download:start')?.r)
+  expect(start.sources.length).toBeGreaterThan(0)
+  expect(start.sources.every((x: any) => x.serverId !== 'c')).toBe(true) // the offline server is not asked
+  await page.getByRole('button', { name: /^Cancel download/ }).click()
+  await expect(tray).toContainText('Canceled')
+  await page.getByRole('button', { name: 'Clear finished' }).click()
+  await expect(tray).toHaveCount(0)
+  // title page
+  await page.locator('[data-tid]').first().click()
+  await expect(page.getByRole('button', { name: 'Download', exact: true })).toBeVisible()
+})
+
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {
   const heroes = page.getByTestId('continue-hero')
   for (const [width, expected] of [[820, 1], [1360, 2], [1920, 3]] as const) {

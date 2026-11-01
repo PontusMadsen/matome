@@ -18,7 +18,7 @@ export interface RawDetail {
   Marker?: { type: string; startTimeOffset: number; endTimeOffset: number }[]
   Role?: { tag: string; role?: string }[]
   Director?: { tag: string }[]
-  Media?: { Part?: { id?: number; key?: string; Stream?: RawStream[] }[] }[]
+  Media?: { container?: string; Part?: { id?: number; key?: string; container?: string; file?: string; Stream?: RawStream[] }[] }[]
 }
 interface RawChild {
   ratingKey: string

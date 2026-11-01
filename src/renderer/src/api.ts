@@ -50,3 +50,9 @@ export const useWatchlist = () =>
   useQuery({ queryKey: ['watchlist'], queryFn: () => window.flax.invoke('watchlist:list', undefined), staleTime: 60_000, select: (xs) => xs.filter((x) => !removedFromWatchlist.has(x.ratingKey)) })
 export const useSearch = (query: string) =>
   useQuery({ queryKey: ['search', query], queryFn: () => window.flax.invoke('search:query', { query }), enabled: query.trim().length > 0, placeholderData: (p) => p })
+
+/** Start a download of the original file into the app's own Downloads folder. Errors are shown as a message. */
+export function startDownload(title: string, year: number | undefined, sources: { serverId: string; ratingKey: string; online?: boolean }[]): void {
+  void window.flax.invoke('download:start', { title, year, sources: sources.filter((x) => x.online !== false).map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })) }).then(() => undefined).catch((e: Error) => window.alert(e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '')))
+}
+export const useDownloads = () => useQuery({ queryKey: ['downloads'], queryFn: () => window.flax.invoke('download:list', undefined), refetchInterval: 1000 })

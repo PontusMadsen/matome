@@ -1,5 +1,7 @@
 import { fetchRemoteImage } from './remote-image'
-import { app, protocol, type IpcMain } from 'electron'
+import { app, protocol, shell, type IpcMain } from 'electron'
+import { join } from 'node:path'
+import { Downloads, downloadFileName, uniquePath } from './downloads'
 import type { IpcChannel, IpcChannels } from '@shared/ipc'
 import { log, scrub } from './log'
 import type { Service } from './service'
@@ -8,6 +10,7 @@ import type { Updater } from './updater'
 type Handlers = { [C in IpcChannel]: (req: IpcChannels[C]['req']) => Promise<IpcChannels[C]['res']> | IpcChannels[C]['res'] }
 
 export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
+  const downloads = new Downloads()
   const handlers: Handlers = {
     'app:version': () => app.getVersion(),
     'auth:state': () => ({ signedIn: svc.signedIn, pending: svc.loginPending, error: svc.loginError ?? undefined }),
@@ -41,6 +44,17 @@ export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
     'title:detail': ({ id }) => svc.detail(id),
     'title:episodes': ({ id, season }) => svc.episodes(id, season),
     'play:streams': ({ serverId, ratingKey }) => svc.streams(serverId, ratingKey),
+    'download:start': async ({ title, year, sources }) => {
+      const src = await svc.downloadSource(sources)
+      // No dialog: files live in the app's own folder, so cleaning out ~/Downloads can't take them along.
+      const dest = uniquePath(join(app.getPath('userData'), 'Downloads'), downloadFileName(title, year, src.container))
+      log(`download started: ${title}`)
+      return { id: downloads.start({ title, url: src.url, headers: src.headers, dest }) }
+    },
+    'download:list': () => downloads.list(),
+    'download:cancel': ({ id }) => downloads.cancel(id),
+    'download:clear': () => downloads.clear(),
+    'download:reveal': ({ id }) => { const p = downloads.pathOf(id); if (p) shell.showItemInFolder(p) },
     'app:log': ({ msg }) => log(`renderer: ${scrub(msg)}`),
     'episode:setWatched': (r) => svc.setEpisodeWatched(r.titleId, r.sources, r.watched),
     'play:stop': ({ serverId, session }) => svc.stopSession(serverId, session),

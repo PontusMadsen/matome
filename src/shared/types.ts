@@ -277,3 +277,14 @@ export const QUALITY_OPTIONS: { kbps: number; label: string }[] = [
   { kbps: 1500, label: '1.5 Mbps' },
   { kbps: 1000, label: '1 Mbps' },
 ]
+
+export interface DownloadInfo {
+  id: string
+  title: string
+  state: 'active' | 'done' | 'error' | 'canceled'
+  received: number
+  /** 0 when the server did not say */
+  total: number
+  path: string
+  error?: string
+}
