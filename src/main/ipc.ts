@@ -1,7 +1,9 @@
 import { fetchRemoteImage } from './remote-image'
 import { app, protocol, shell, type IpcMain } from 'electron'
+import { createReadStream, readFileSync, statSync, writeFileSync, existsSync } from 'node:fs'
+import { Readable } from 'node:stream'
 import { join } from 'node:path'
-import { Downloads, downloadFileName, uniquePath } from './downloads'
+import { Downloads, downloadFileName, parseRange, sniffImageType, uniquePath, videoType } from './downloads'
 import type { IpcChannel, IpcChannels } from '@shared/ipc'
 import { log, scrub } from './log'
 import type { Service } from './service'
@@ -10,7 +12,7 @@ import type { Updater } from './updater'
 type Handlers = { [C in IpcChannel]: (req: IpcChannels[C]['req']) => Promise<IpcChannels[C]['res']> | IpcChannels[C]['res'] }
 
 export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
-  const downloads = new Downloads()
+  const downloads = new Downloads(join(app.getPath('userData'), 'downloads.json'))
   const handlers: Handlers = {
     'app:version': () => app.getVersion(),
     'auth:state': () => ({ signedIn: svc.signedIn, pending: svc.loginPending, error: svc.loginError ?? undefined }),
@@ -44,16 +46,21 @@ export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
     'title:detail': ({ id }) => svc.detail(id),
     'title:episodes': ({ id, season }) => svc.episodes(id, season),
     'play:streams': ({ serverId, ratingKey }) => svc.streams(serverId, ratingKey),
-    'download:start': async ({ title, year, sources }) => {
+    'download:start': async ({ title, year, meta, poster, sources }) => {
       const src = await svc.downloadSource(sources)
       // No dialog: files live in the app's own folder, so cleaning out ~/Downloads can't take them along.
       const dest = uniquePath(join(app.getPath('userData'), 'Downloads'), downloadFileName(title, year, src.container))
       log(`download started: ${title}`)
-      return { id: downloads.start({ title, url: src.url, headers: src.headers, dest }) }
+      const id = downloads.start({ title, meta, url: src.url, headers: src.headers, dest })
+      void saveHere(poster, `${dest}.poster`).then((ok) => { if (ok) downloads.markPoster(id) })
+      return { id }
     },
     'download:list': () => downloads.list(),
     'download:cancel': ({ id }) => downloads.cancel(id),
     'download:clear': () => downloads.clear(),
+    'download:remove': ({ id }) => downloads.remove(id),
+    'download:open': async ({ id }) => { const p = downloads.pathOf(id); if (p) await shell.openPath(p) },
+    'download:position': ({ id, ms }) => downloads.setPosition(id, ms),
     'download:reveal': ({ id }) => { const p = downloads.pathOf(id); if (p) shell.showItemInFolder(p) },
     'app:log': ({ msg }) => log(`renderer: ${scrub(msg)}`),
     'episode:setWatched': (r) => svc.setEpisodeWatched(r.titleId, r.sources, r.watched),
@@ -72,6 +79,40 @@ export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
     }
     const u = new URL(request.url)
     return svc.stream(u.hostname, u.pathname + u.search, request.headers.get('range'))
+  })
+  /** Save the image behind one of our flax-img URLs to `dest` (best effort; offline playback shows it as the cover). */
+  const saveHere = async (url: string | undefined, dest: string): Promise<boolean> => {
+    if (!url?.startsWith('flax-img://')) return false
+    try {
+      const u = new URL(url)
+      const img =
+        u.hostname === 'remote' ? await fetchRemoteImage(decodeURIComponent(u.pathname.slice(1)))
+        : u.hostname === 'discover' ? await svc.discoverImage(u.pathname + u.search)
+        : await svc.image(u.hostname, u.pathname + u.search)
+      if (!img) return false
+      writeFileSync(dest, new Uint8Array(img.data))
+      return true
+    } catch { return false }
+  }
+  // flax-local://file/<id> (video, with Range) and flax-local://poster/<id>: files from the Downloaded section
+  protocol.handle('flax-local', (request) => {
+    const u = new URL(request.url)
+    const id = u.pathname.slice(1)
+    const path = downloads.pathOf(id)
+    if (!path || !existsSync(path)) return new Response(null, { status: 404 })
+    if (u.hostname === 'poster') {
+      const file = `${path}.poster`
+      if (!existsSync(file)) return new Response(null, { status: 404 })
+      const buf = readFileSync(file)
+      return new Response(new Uint8Array(buf), { headers: { 'content-type': sniffImageType(buf), 'cache-control': 'public, max-age=86400' } })
+    }
+    const size = statSync(path).size
+    const range = parseRange(request.headers.get('range'), size)
+    const base = { 'content-type': videoType(path), 'accept-ranges': 'bytes' }
+    if (range === 'invalid') return new Response(null, { status: 416, headers: { ...base, 'content-range': `bytes */${size}` } })
+    const span = range ?? { start: 0, end: size - 1 }
+    const body = size === 0 ? null : (Readable.toWeb(createReadStream(path, span)) as unknown as ReadableStream)
+    return new Response(body, { status: range ? 206 : 200, headers: { ...base, 'content-length': String(size === 0 ? 0 : span.end - span.start + 1), ...(range ? { 'content-range': `bytes ${span.start}-${span.end}/${size}` } : {}) } })
   })
   // flax-img://<serverId>/<plex path> -> authenticated fetch in main
   protocol.handle('flax-img', async (request) => {

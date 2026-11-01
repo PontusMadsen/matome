@@ -11,7 +11,8 @@ const settle = async (page: Page) => {
 test.beforeEach(async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
-  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
+  // flax-local:// / flax-stream:// only exist inside the Electron app; plain Chromium reports them as unknown schemes.
+  page.on('console', (m) => m.type() === 'error' && !m.text().includes('ERR_UNKNOWN_URL_SCHEME') && errors.push(m.text()))
   await page.addInitScript(installMock)
   await page.goto('/index.html')
   await page.getByRole('button', { name: 'Home', exact: true }).waitFor()
@@ -317,6 +318,45 @@ test('download: movie menu and title page offer it, progress shows in the tray a
   // title page
   await page.locator('[data-tid]').first().click()
   await expect(page.getByRole('button', { name: 'Download', exact: true })).toBeVisible()
+})
+
+test('Downloaded: lists what is saved, plays it from disk, goes on to the next episode, and deletes', async ({ page }) => {
+  await page.getByRole('button', { name: 'Downloaded', exact: true }).click()
+  await settle(page)
+  await expect(page.getByText('3 items')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Movies' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Slow Horses' })).toBeVisible()
+  // movie: plays straight from the local file, no quality menu (nothing is transcoded)
+  await page.getByRole('button', { name: 'Play Dune (2021)' }).click()
+  await expect(page.locator('[data-player]')).toBeVisible()
+  await expect(page.locator('[data-player] video')).toHaveAttribute('src', 'flax-local://file/o1')
+  await expect(page.getByRole('combobox', { name: 'Quality' })).toHaveCount(0)
+  await page.locator('[data-player]').getByRole('button', { name: 'Back', exact: true }).click()
+  // episode: the next downloaded one follows
+  await page.getByRole('button', { name: 'Play Slow Horses - S03E02 - Episode 2' }).click()
+  await expect(page.locator('[data-player] video')).toHaveAttribute('src', 'flax-local://file/o2')
+  await page.locator('[data-player] video').evaluate((v) => v.dispatchEvent(new Event('ended')))
+  await expect(page.locator('[data-player] video')).toHaveAttribute('src', 'flax-local://file/o3')
+  await page.locator('[data-player]').getByRole('button', { name: 'Back', exact: true }).click()
+  // delete, after confirming
+  page.once('dialog', (d) => { expect(d.message()).toContain('Dune (2021)'); void d.accept() })
+  await page.getByRole('button', { name: 'More for Dune (2021)' }).click()
+  await page.getByRole('menuitem', { name: /^Delete from this Mac/ }).click()
+  await expect(page.getByRole('button', { name: 'Play Dune (2021)' })).toHaveCount(0)
+  await expect(page.getByText('2 items')).toBeVisible()
+  const calls = await page.evaluate(() => (window as any).__calls.filter((c: any) => c.c === 'download:remove').map((c: any) => c.r.id))
+  expect(calls).toEqual(['o1'])
+})
+
+test('Downloaded: declining the confirmation keeps the file', async ({ page }) => {
+  await page.getByRole('button', { name: 'Downloaded', exact: true }).click()
+  await settle(page)
+  page.once('dialog', (d) => void d.dismiss())
+  await page.getByRole('button', { name: 'More for Dune (2021)' }).click()
+  await page.getByRole('menuitem', { name: /^Delete from this Mac/ }).click()
+  await expect(page.getByRole('button', { name: 'Play Dune (2021)' })).toBeVisible()
+  const removed = await page.evaluate(() => (window as any).__calls.some((c: any) => c.c === 'download:remove'))
+  expect(removed).toBe(false)
 })
 
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {

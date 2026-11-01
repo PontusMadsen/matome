@@ -1,4 +1,4 @@
-import type { DownloadInfo, PlayableStreams, UpdateStatus, CollectionInfo, PlaylistInfo, MpvRequest, Settings, ContinueItem, DiscoverItem, MediaType, MergedEpisode, MergedTitle, PlayRequest, ServerInfo, TitleDetail } from './types'
+import type { DownloadInfo, DownloadMeta, PlayableStreams, UpdateStatus, CollectionInfo, PlaylistInfo, MpvRequest, Settings, ContinueItem, DiscoverItem, MediaType, MergedEpisode, MergedTitle, PlayRequest, ServerInfo, TitleDetail } from './types'
 
 export interface SyncStatus {
   serverId: string
@@ -49,11 +49,16 @@ export interface IpcChannels {
   'subtitle:fetch': { req: { serverId: string; streamId: number; key?: string }; res: { text: string; via: string } }
   'library:list': { req: { type: MediaType }; res: MergedTitle[] }
   /** downloads the original file from the first server that serves it into the app's own Downloads folder (~/Library/Application Support/Flax/Downloads) */
-  'download:start': { req: { title: string; year?: number; sources: { serverId: string; ratingKey: string }[] }; res: { id: string } }
+  'download:start': { req: { title: string; year?: number; meta: DownloadMeta; poster?: string; sources: { serverId: string; ratingKey: string }[] }; res: { id: string } }
   'download:list': { req: void; res: DownloadInfo[] }
   'download:cancel': { req: { id: string }; res: void }
   'download:clear': { req: void; res: void }
   'download:reveal': { req: { id: string }; res: void }
+  /** deletes the file and its entry */
+  'download:remove': { req: { id: string }; res: void }
+  /** opens the file in the default app (for formats the built-in player cannot decode) */
+  'download:open': { req: { id: string }; res: void }
+  'download:position': { req: { id: string; ms: number }; res: void }
 }
 
 export type IpcChannel = keyof IpcChannels

@@ -30,6 +30,7 @@ function createWindow(): void {
 protocol.registerSchemesAsPrivileged([
   // `standard` is required so relative URLs inside HLS playlists resolve against flax-stream://<server>/...
   { scheme: 'flax-img', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } },
+  { scheme: 'flax-local', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true, corsEnabled: true } },
   { scheme: 'flax-stream', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true, corsEnabled: true } },
 ])
 
