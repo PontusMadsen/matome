@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useContextMenu, type MenuItem } from './ContextMenu'
-import { refreshContinue, startDownload, useWatchlist } from '../api'
+import { downloadable, refreshContinue, startDownload, useDownloadServers, useWatchlist, type AutoPlay } from '../api'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ContinueItem, MergedTitle } from '@shared/types'
 import { Icon } from './Icon'
@@ -22,12 +22,14 @@ function Poster({ urls, title }: { urls: string[]; title: string }) {
   return url ? <img className={`${s.img} ${loaded ? s.loaded : ''}`} src={url} alt="" loading="lazy" onLoad={() => setLoaded(true)} onError={() => setI((n) => n + 1)} /> : <div className={s.fallback}>{title}</div>
 }
 
-export function Card({ t, onOpen, progress, index }: { t: MergedTitle; onOpen?: (t: MergedTitle, el?: HTMLElement | null) => void; progress?: number; index?: number }) {
+/** Click the card = its page (details); click the round play button = start playing. `onPlay` overrides what play does (Continue Watching resumes the exact episode). */
+export function Card({ t, onOpen, onPlay, progress, index }: { t: MergedTitle; onOpen?: (t: MergedTitle, el?: HTMLElement | null, auto?: AutoPlay) => void; onPlay?: (el: HTMLElement) => void; progress?: number; index?: number }) {
   const offline = t.sources.every((x) => !x.online)
   const qc = useQueryClient()
   // Movies: watched = watched anywhere. Shows: "unwatched" if any episode is left.
   const isWatched = t.type === 'movie' ? t.watched : t.unwatchedCount === 0
   const wl = useWatchlist().data
+  const perms = useDownloadServers().data
   const { onContextMenu, openMenu, menu } = useContextMenu(() => {
     const onList = wl?.find((d) => d.availableAs === t.id)
     const items: MenuItem[] = [
@@ -37,7 +39,8 @@ export function Card({ t, onOpen, progress, index }: { t: MergedTitle; onOpen?: 
       onSelect: () => void window.flax.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), refreshContinue(qc)])),
     },
     ]
-    if (t.type === 'movie') items.push({ label: 'Download…', onSelect: () => startDownload({ title: t.title, year: t.year, meta: { kind: 'movie', name: t.title, year: t.year }, poster: t.posters[0], sources: t.sources }) })
+    const dl = downloadable(t.sources, perms)
+    if (t.type === 'movie' && dl.length > 0) items.push({ label: 'Download…', onSelect: () => startDownload({ title: t.title, year: t.year, meta: { kind: 'movie', name: t.title, year: t.year }, poster: t.posters[0], sources: dl }) })
     const refresh = () => Promise.all([qc.invalidateQueries({ queryKey: ['watchlist'] }), qc.invalidateQueries({ queryKey: ['search'] })])
     items.push(
       onList
@@ -52,7 +55,16 @@ export function Card({ t, onOpen, progress, index }: { t: MergedTitle; onOpen?: 
       <div className={s.poster} data-poster>
         <Poster urls={t.posters} title={t.title} />
         <div className={s.hover}>
-          <span className={s.play}><Icon name="play" size={20} fill /></span>
+          <button
+            className={s.play}
+            aria-label={`${progress ? 'Resume' : 'Play'} ${t.title}`}
+            title={progress ? 'Resume' : 'Play'}
+            onClick={(e) => { e.stopPropagation(); const card = e.currentTarget.closest('[data-tid]') as HTMLElement; if (onPlay) onPlay(card); else onOpen?.(t, card, { next: true }) }}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <Icon name="play" size={20} fill />
+          </button>
+          <span className={s.hint}>Details</span>
         </div>
         <button className={s.more} aria-label={`More for ${t.title}`} title="More" onClick={openMenu} onKeyDown={(e) => e.stopPropagation()}><Icon name="more" size={16} fill /></button>
         {t.unwatchedCount > 0 && <span className={s.pill} title={`${t.unwatchedCount} unwatched episode${t.unwatchedCount > 1 ? 's' : ''}`}>{t.unwatchedCount}</span>}
@@ -83,7 +95,7 @@ export function ContinueTile({ c, onOpen }: { c: ContinueItem; onOpen: (el: HTML
   )
 }
 
-export function PosterGrid({ items, onOpen, jumpTo }: { items: MergedTitle[]; onOpen?: (t: MergedTitle, el?: HTMLElement | null) => void; /** scroll so this item index is at the top; `n` makes repeated jumps to the same index fire again */ jumpTo?: { index: number; n: number } }) {
+export function PosterGrid({ items, onOpen, jumpTo }: { items: MergedTitle[]; onOpen?: (t: MergedTitle, el?: HTMLElement | null, auto?: AutoPlay) => void; /** scroll so this item index is at the top; `n` makes repeated jumps to the same index fire again */ jumpTo?: { index: number; n: number } }) {
   const parent = useRef<HTMLDivElement>(null)
   useDragScroll(parent)
   const [width, setWidth] = useState(1000)
@@ -164,7 +176,7 @@ export function Shelf({ title, hint, busy, resetKey, children }: { title: string
   )
 }
 
-export function RecentRow({ items, onOpen }: { items: MergedTitle[]; onOpen?: (t: MergedTitle, el?: HTMLElement | null) => void }) {
+export function RecentRow({ items, onOpen }: { items: MergedTitle[]; onOpen?: (t: MergedTitle, el?: HTMLElement | null, auto?: AutoPlay) => void }) {
   return (
     <>
       {items.map((t, i) => (

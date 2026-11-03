@@ -310,7 +310,7 @@ test('download: movie menu and title page offer it, progress shows in the tray a
   await expect(tray).toContainText('450 MB of 1.80 GB')
   const start = await page.evaluate(() => (window as any).__calls.find((c: any) => c.c === 'download:start')?.r)
   expect(start.sources.length).toBeGreaterThan(0)
-  expect(start.sources.every((x: any) => x.serverId !== 'c')).toBe(true) // the offline server is not asked
+  expect(start.sources.map((x: any) => x.serverId)).toEqual(['a']) // not the offline server, and not the friend's server that refuses downloads
   await page.getByRole('button', { name: /^Cancel download/ }).click()
   await expect(tray).toContainText('Canceled')
   await page.getByRole('button', { name: 'Clear finished' }).click()
@@ -357,6 +357,48 @@ test('Downloaded: declining the confirmation keeps the file', async ({ page }) =
   await expect(page.getByRole('button', { name: 'Play Dune (2021)' })).toBeVisible()
   const removed = await page.evaluate(() => (window as any).__calls.some((c: any) => c.c === 'download:remove'))
   expect(removed).toBe(false)
+})
+
+test('Downloaded appears in the sidebar only while there is something downloaded', async ({ page }) => {
+  const item = page.locator('nav').getByRole('button', { name: 'Downloaded', exact: true })
+  await expect(item).toBeVisible()
+  await page.evaluate(() => { (window as any).__dlEmpty = true })
+  await expect(item).toHaveCount(0, { timeout: 5000 })
+})
+
+test('Download is not offered for a title whose only server refuses downloads', async ({ page }) => {
+  await page.getByRole('button', { name: 'Movies' }).click()
+  await settle(page)
+  await page.getByLabel('Sort').selectOption('title') // Zodiac (only on Friend A) sorts last
+  await page.locator('[data-tid="movie:19"]').scrollIntoViewIfNeeded()
+  await page.locator('[data-tid="movie:19"]').getByRole('button', { name: /^More for/ }).click({ force: true })
+  await expect(page.getByRole('menuitem', { name: /Mark as/ })).toBeVisible()
+  await expect(page.getByRole('menuitem', { name: 'Download…' })).toHaveCount(0)
+  await page.keyboard.press('Escape')
+  // a title that has a server that allows it still offers it
+  await page.locator('[data-tid="movie:1"]').getByRole('button', { name: /^More for/ }).click({ force: true })
+  await expect(page.getByRole('menuitem', { name: 'Download…' })).toBeVisible()
+})
+
+test('cards: the ⋮ shows only on hover; the round button plays, the rest of the card opens details', async ({ page }) => {
+  await page.getByRole('button', { name: 'Movies' }).click()
+  await settle(page)
+  const card = page.locator('[data-tid]').first()
+  const more = card.getByRole('button', { name: /^More for/ })
+  expect(await more.evaluate((el) => getComputedStyle(el).opacity)).toBe('0')
+  await card.hover()
+  await expect.poll(() => more.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
+  await expect(card.getByText('Details', { exact: true })).toBeVisible()
+  // the card (not the button) opens the page, and nothing plays
+  await card.locator('[data-poster]').click({ position: { x: 20, y: 20 } })
+  await expect(page.getByRole('button', { name: 'Back', exact: true })).toBeVisible()
+  await expect(page.locator('[data-player]')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Back', exact: true }).click()
+  await settle(page)
+  // the round play button starts playing
+  await page.locator('[data-tid]').first().hover()
+  await page.locator('[data-tid]').first().getByRole('button', { name: /^Play / }).click()
+  await expect(page.locator('[data-player]')).toBeVisible()
 })
 
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {

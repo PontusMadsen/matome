@@ -15,7 +15,7 @@ export function installMock(): void {
     names.map((n, i) => ({
       id: `${type}:${i}`, type, title: n, year: 2010 + (i % 15), guids: {}, genres: ['Drama'], watched: i % 4 === 0,
       unwatchedCount: type === 'show' ? (i % 5) * 3 : 0, rating: 7.5, addedAt: 1000 - i, posters: [svg(300, 450, i, n)], poster: svg(300, 450, i, n), art: svg(1600, 700, i, ''),
-      sources: [src('a', 'Home server', 1), src('b', 'Friend A', 2), src('c', 'Offline', 1, false)],
+      sources: i === 19 ? [src('b', 'Friend A', 2)] : [src('a', 'Home server', 1), src('b', 'Friend A', 2), src('c', 'Offline', 1, false)], // the last title lives only on the server that refuses downloads
     }))
   let cont: any[] = [{ key: 'k1', title: 'Slow Horses', subtitle: 'S3E2 · Episode 2', serverId: 'a', ratingKey: '9', season: 3, episode: 2, viewOffsetMs: 1_200_000, durationMs: 3_000_000, lastViewedAt: 9, titleId: 'show:0', art: svg(1600, 700, 0, '') },
       { key: 'k2', title: 'Ted Lasso', subtitle: 'S3E1 · Episode 1', serverId: 'a', ratingKey: '8', season: 3, episode: 1, viewOffsetMs: 600_000, durationMs: 3_000_000, lastViewedAt: 8, titleId: 'show:1', art: svg(1600, 700, 1, '') },
@@ -54,7 +54,9 @@ export function installMock(): void {
     // Like the live service, the list keeps returning an item for a while after it was removed.
     'title:setWatched': (r: { id: string; watched: boolean }) => { if (r.watched) cont = cont.filter((c) => c.titleId !== r.id) },
     'download:start': (r: { title: string }) => { dls = [{ id: 'd1', title: r.title, meta: { kind: 'movie', name: r.title }, state: 'active', received: 450_000_000, total: 1_800_000_000, path: '/x', createdAt: 9 }, ...dls]; return { id: 'd1' } },
-    'download:list': () => dls,
+    // Home server: yours, allowed. Friend A refuses downloads. The offline one is unknown.
+    'download:servers': () => ({ a: true, b: false, c: null }),
+    'download:list': () => ((window as any).__dlEmpty ? [] : dls),
     'download:cancel': () => { dls = dls.map((d) => (d.state === 'active' ? { ...d, state: 'canceled' } : d)) },
     'download:clear': () => { dls = dls.filter((d) => d.state === 'active' || d.state === 'done').map((d) => ({ ...d, fresh: false })) },
     'download:remove': (r: { id: string }) => { dls = dls.filter((d) => d.id !== r.id) },
