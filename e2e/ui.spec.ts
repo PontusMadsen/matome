@@ -32,7 +32,7 @@ test('home shows the Continue Watching hero and shelves', async ({ page }) => {
 test('shows grid: unwatched-episode pills, no server-count badge', async ({ page }) => {
   await page.getByRole('button', { name: 'TV Shows' }).click()
   await expect(page.locator('[data-tid="show:1"]')).toBeVisible()
-  await expect(page.locator('[data-tid="show:1"]').getByTitle(/unwatched episode/)).toHaveText('3')
+  await expect(page.locator('[data-tid="show:1"]').getByRole('img', { name: /unwatched episode/ })).toHaveText('3')
 })
 
 test('detail: seasons newest first, Specials last, opens on the newest', async ({ page }) => {
@@ -389,6 +389,8 @@ test('cards: the ⋮ shows only on hover; the round button plays, the rest of th
   await card.hover()
   await expect.poll(() => more.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
   await expect(card.getByText('Details', { exact: true })).toBeVisible()
+  // no browser tooltip bubbles on a card or its buttons
+  expect(await card.evaluate((el) => [el, ...el.querySelectorAll('*')].filter((n) => n.hasAttribute('title')).length)).toBe(0)
   // the card (not the button) opens the page, and nothing plays
   await card.locator('[data-poster]').click({ position: { x: 20, y: 20 } })
   await expect(page.getByRole('button', { name: 'Back', exact: true })).toBeVisible()
