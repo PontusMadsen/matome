@@ -55,6 +55,7 @@ export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
       void saveHere(poster, `${dest}.poster`).then((ok) => { if (ok) downloads.markPoster(id) })
       return { id }
     },
+    'download:servers': () => svc.downloadPermissions(),
     'download:list': () => downloads.list(),
     'download:cancel': ({ id }) => downloads.cancel(id),
     'download:clear': () => downloads.clear(),

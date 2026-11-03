@@ -50,6 +50,8 @@ export interface IpcChannels {
   'library:list': { req: { type: MediaType }; res: MergedTitle[] }
   /** downloads the original file from the first server that serves it into the app's own Downloads folder (~/Library/Application Support/Flax/Downloads) */
   'download:start': { req: { title: string; year?: number; meta: DownloadMeta; poster?: string; sources: { serverId: string; ratingKey: string }[] }; res: { id: string } }
+  /** per server: true = downloads allowed, false = refused, null = not known */
+  'download:servers': { req: void; res: Record<string, boolean | null> }
   'download:list': { req: void; res: DownloadInfo[] }
   'download:cancel': { req: { id: string }; res: void }
   'download:clear': { req: void; res: void }

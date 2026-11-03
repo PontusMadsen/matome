@@ -270,6 +270,44 @@ export class Service {
     return Math.max(0, ...each)
   }
 
+  private dlPerm = new Map<string, { ok: boolean | null; at: number }>()
+
+  /**
+   * Which servers let this account download: yours always do; for a shared server we ask it, with a one-byte ranged request
+   * for a file it holds (the same request a download makes). 403/401 = no, success = yes, anything else = unknown (null).
+   * Plex does not publish this permission as a field we can read, so asking the server is the only reliable way. Cached for 30 minutes.
+   */
+  async downloadPermissions(): Promise<Record<string, boolean | null>> {
+    const out: Record<string, boolean | null> = {}
+    const titles = [...this.library('movie'), ...this.library('show')]
+    await Promise.all(
+      this.infos.map(async (info) => {
+        const cred = this.creds.get(info.id)
+        if (!cred || !info.baseUrl || !info.online) { out[info.id] = this.dlPerm.get(info.id)?.ok ?? null; return }
+        if (info.owned) { out[info.id] = true; return }
+        const hit = this.dlPerm.get(info.id)
+        if (hit && Date.now() - hit.at < 30 * 60_000) { out[info.id] = hit.ok; return }
+        const movie = this.library('movie').find((t) => t.sources.some((x) => x.serverId === info.id))
+        const sample = movie?.sources.find((x) => x.serverId === info.id) ?? titles.flatMap((t) => t.sources).find((x) => x.serverId === info.id)
+        let ok: boolean | null = null
+        try {
+          if (sample && movie) {
+            const d = await fetchDetail(this.id, info, cred.accessToken, sample.ratingKey)
+            const key = d.Media?.[0]?.Part?.[0]?.key
+            if (key) {
+              const res = await fetch(`${info.baseUrl}${key}?download=1`, { headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Flax', Range: 'bytes=0-0' }, signal: AbortSignal.timeout(8000) })
+              void res.body?.cancel()
+              ok = res.status === 401 || res.status === 403 ? false : res.ok ? true : null
+            }
+          }
+        } catch { ok = null }
+        this.dlPerm.set(info.id, { ok, at: Date.now() })
+        out[info.id] = ok
+      }),
+    )
+    return out
+  }
+
   /** The first of these copies whose server is reachable and names a file: where to download it from. */
   async downloadSource(sources: { serverId: string; ratingKey: string }[]): Promise<{ url: string; headers: Record<string, string>; container?: string }> {
     let lastError: unknown

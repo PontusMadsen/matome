@@ -32,9 +32,9 @@ export function Home({ onOpen }: { onOpen: (t: MergedTitle, el?: HTMLElement | n
       subtitles: [],
     })
   }
-  const details = (c: ContinueItem) => {
+  const details = (c: ContinueItem, el?: HTMLElement | null) => {
     const t = c.titleId ? byId.get(c.titleId) : undefined
-    if (t) onOpen(t)
+    if (t) onOpen(t, el)
   }
 
   // How many big cards fit: one per ~470px of content width (1, 2 or 3), measured so it follows window resizes.
@@ -96,7 +96,7 @@ export function Home({ onOpen }: { onOpen: (t: MergedTitle, el?: HTMLElement | n
             const t = c.titleId ? byId.get(c.titleId) : undefined
             return (
               <div key={c.key}>
-                {t ? <Card t={t} onOpen={(tt, el) => start(c, el)} progress={c.durationMs ? c.viewOffsetMs / c.durationMs : undefined} /> : <ContinueTile c={c} onOpen={(el) => start(c, el)} />}
+                {t ? <Card t={t} onOpen={(_tt, el) => details(c, el)} onPlay={(el) => start(c, el)} progress={c.durationMs ? c.viewOffsetMs / c.durationMs : undefined} /> : <ContinueTile c={c} onOpen={(el) => start(c, el)} />}
               </div>
             )
           })}

@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon'
 import { useContextMenu } from '../components/ContextMenu'
 import { Player, type PlayTarget } from '../components/Player'
 import { ScrollPage } from '../components/ScrollPage'
-import { refreshContinue, startDownload } from '../api'
+import { downloadable, refreshContinue, startDownload, useDownloadServers, type AutoPlay } from '../api'
 import s from './Detail.module.css'
 
 const qLabel = (x: Source) =>
@@ -18,9 +18,11 @@ const connLabel = (n: number) => ['Local', 'Remote', 'Relay'][n] ?? ''
 const fmtDur = (ms?: number) => (ms ? (ms >= 3_600_000 ? `${Math.floor(ms / 3_600_000)}h ${Math.round((ms % 3_600_000) / 60_000)}m` : `${Math.round(ms / 60_000)}m`) : '')
 
 function Episode({ e, t, onPlay, onChanged }: { e: MergedEpisode; t: MergedTitle; onPlay: () => void; onChanged: () => void }) {
+  const perms = useDownloadServers().data
+  const dl = downloadable(e.sources, perms)
   const { onContextMenu, openMenu, menu } = useContextMenu(() => [
     { label: 'Play', onSelect: onPlay },
-    { label: 'Download…', onSelect: () => startDownload({ title: `${t.title} - S${String(e.season).padStart(2, '0')}E${String(e.episode).padStart(2, '0')} - ${e.title}`, meta: { kind: 'episode', name: e.title, show: t.title, season: e.season, episode: e.episode }, poster: t.posters[0], sources: e.sources }) },
+    ...(dl.length === 0 ? [] : [{ label: 'Download…', onSelect: () => startDownload({ title: `${t.title} - S${String(e.season).padStart(2, '0')}E${String(e.episode).padStart(2, '0')} - ${e.title}`, meta: { kind: 'episode', name: e.title, show: t.title, season: e.season, episode: e.episode }, poster: t.posters[0], sources: dl }) }]),
     {
       label: e.watched ? 'Mark as unwatched' : 'Mark as watched',
       onSelect: () => void window.flax.invoke('episode:setWatched', { titleId: t.id, sources: e.sources.map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })), watched: !e.watched }).then(onChanged),
@@ -50,7 +52,7 @@ function Episode({ e, t, onPlay, onChanged }: { e: MergedEpisode; t: MergedTitle
 }
 
 /** Open the page and start playing straight away (used by Continue Watching). */
-export interface AutoPlay { season?: number; episode?: number }
+export type { AutoPlay }
 
 export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => void; auto?: AutoPlay }) {
   const { data, error } = useQuery({ queryKey: ['detail', t.id], queryFn: () => window.flax.invoke('title:detail', { id: t.id }) })
@@ -58,6 +60,7 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
   const [play, setPlay] = useState<PlayTarget | null>(null)
   const [pick, setPick] = useState(0)
   const qc = useQueryClient()
+  const perms = useDownloadServers().data
   const refreshAll = () => window.flax.invoke('title:refresh', { id: t.id }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), qc.invalidateQueries({ queryKey: ['episodes'] }), refreshContinue(qc)]))
   const act = (p: Promise<unknown>) => p.then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), refreshContinue(qc)]))
   // Newest season first; Specials (season 0) last. Opens on the newest season.
@@ -129,6 +132,10 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
     if (!auto || autoDone.current) return
     if (t.type === 'movie') {
       if (data && prefs.isFetched && mpvOk.isFetched) { autoDone.current = true; playMovie() }
+    } else if (auto.next) {
+      // Play button on a show's card: the first episode not watched yet (of the season shown), else the first.
+      const list = eps.data
+      if (list && list.length > 0) { autoDone.current = true; const i = list.findIndex((e) => !e.watched); playEpisode(list, i >= 0 ? i : 0) }
     } else if (auto.season !== undefined) {
       if (season !== auto.season) { setSeason(auto.season); return }
       const list = eps.data
@@ -165,7 +172,7 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
             <p className={s.summary}>{data?.summary ?? t.summary}</p>
             {data?.directors.length ? <p className="t-meta">Directed by {data.directors.join(', ')}</p> : null}
             <div className={s.actions}>
-              {t.type === 'movie' && (
+              {t.type === 'movie' && downloadable(t.sources, perms).length > 0 && (
                 <button className="btn btn-primary btn-lg" onClick={playMovie} disabled={!data || online.length === 0}>
                   <Icon name="play" size={16} fill /> {resume ? `Resume · ${fmtDur(resume)}` : 'Play'}
                 </button>
@@ -185,7 +192,7 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
                 <Icon name="check" size={16} /> Watched
               </button>
               {t.type === 'movie' && (
-                <button className="btn btn-lg" title="Save the original file to this Mac" onClick={() => startDownload({ title: t.title, year: t.year, meta: { kind: 'movie', name: t.title, year: t.year }, poster: t.posters[0], sources: t.sources })}>
+                <button className="btn btn-lg" title="Save the original file to this Mac" onClick={() => startDownload({ title: t.title, year: t.year, meta: { kind: 'movie', name: t.title, year: t.year }, poster: t.posters[0], sources: downloadable(t.sources, perms) })}>
                   <Icon name="download" size={16} /> Download
                 </button>
               )}

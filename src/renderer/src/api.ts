@@ -59,3 +59,12 @@ export function startDownload(o: { title: string; year?: number; meta: DownloadM
     .catch((e: Error) => window.alert(e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '')))
 }
 export const useDownloads = () => useQuery({ queryKey: ['downloads'], queryFn: () => window.flax.invoke('download:list', undefined), refetchInterval: 1000 })
+
+/** What a card may start when its play button is pressed; `next` = the next unwatched episode of a show. */
+export interface AutoPlay { season?: number; episode?: number; next?: boolean }
+
+/** Which servers refuse downloads (false), allow them (true) or are unknown (null). */
+export const useDownloadServers = () => useQuery({ queryKey: ['download-servers'], queryFn: () => window.flax.invoke('download:servers', undefined), staleTime: 10 * 60_000 })
+/** A download is offered unless every online copy sits on a server that is known to refuse. */
+export const downloadable = <T extends { serverId: string; online?: boolean }>(sources: T[], perms: Record<string, boolean | null> | undefined): T[] =>
+  sources.filter((x) => x.online !== false && perms?.[x.serverId] !== false)

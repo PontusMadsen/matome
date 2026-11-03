@@ -6,6 +6,7 @@ import { useContextMenu } from '../components/ContextMenu'
 import { Icon } from '../components/Icon'
 import { Player, type PlayTarget } from '../components/Player'
 import { ScrollPage } from '../components/ScrollPage'
+import page from './Page.module.css'
 import s from './DownloadedView.module.css'
 
 const size = (n: number) => (n >= 1e9 ? `${(n / 1e9).toFixed(1)} GB` : `${Math.round(n / 1e6)} MB`)
@@ -62,7 +63,7 @@ export function DownloadedView() {
   }
 
   return (
-    <ScrollPage className={s.page}>
+    <ScrollPage className={`${page.page} ${s.page}`}>
       {items.length === 0 ? (
         <div className={s.empty}>
           <h3>Nothing downloaded yet</h3>

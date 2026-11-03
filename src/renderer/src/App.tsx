@@ -8,7 +8,7 @@ import { Icon, type IconName } from './components/Icon'
 import logo from './assets/flax-horizontal-dark.svg'
 import logoInk from './assets/flax-horizontal-ink.svg'
 import { applySkin } from './skins'
-import { useServers } from './api'
+import { useDownloads, useServers } from './api'
 import { Detail, type AutoPlay } from './views/Detail'
 import { Home } from './views/Home'
 import { LibraryView } from './views/LibraryView'
@@ -132,7 +132,10 @@ export function App() {
     return () => window.removeEventListener('keydown', k)
   }, [closeTitle, palette])
 
-  const idx = NAV.findIndex((n) => n.v === view)
+  // "Downloaded" only appears once there is something downloaded (or downloading).
+  const hasDownloads = (useDownloads().data ?? []).some((d) => d.state === 'done' || d.state === 'active')
+  const nav = NAV.filter((n) => n.v !== 'Downloaded' || hasDownloads || view === 'Downloaded')
+  const idx = nav.findIndex((n) => n.v === view)
   return (
     <div className={s.shell}>
       <div className={s.drag} />
@@ -142,7 +145,7 @@ export function App() {
         <img className={s.logo} data-logo="dark-on-light" src={logoInk} alt="" aria-hidden draggable={false} />
         <div className={s.navlist}>
           <div data-ui="ind" className={`${s.ind} ${open || view === 'Server' ? s.indoff : ''}`} style={{ '--i': idx } as React.CSSProperties} />
-          {NAV.map(({ v, icon }) => (
+          {nav.map(({ v, icon }) => (
             <button key={v} data-ui="nav" data-active={v === view && !open} className={`${s.nav} ${v === view && !open ? s.active : ''}`} onClick={() => go(v)}>
               <Icon name={icon} />
               {v}
