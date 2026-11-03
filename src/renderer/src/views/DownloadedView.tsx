@@ -28,9 +28,9 @@ function Tile({ d, onPlay, onDelete }: { d: DownloadInfo; onPlay: () => void; on
         {d.hasPoster ? <img src={`flax-local://poster/${d.id}`} alt="" loading="lazy" /> : <div className={s.fallback}>{d.meta.show ?? d.meta.name}</div>}
         {!active && <div className={s.hover}><span className={s.play}><Icon name="play" size={20} fill /></span></div>}
         {active && d.total > 0 && <div className={s.bar}><i style={{ width: `${Math.min(100, (d.received / d.total) * 100)}%` }} /></div>}
-        <button className={s.more} aria-label={`More for ${d.title}`} title="More" onClick={openMenu}><Icon name="more" size={16} fill /></button>
+        <button className={s.more} aria-label={`More for ${d.title}`} onClick={openMenu}><Icon name="more" size={16} fill /></button>
       </div>
-      <div className={s.name} title={d.title}>{d.meta.kind === 'episode' ? d.meta.show : d.meta.name}</div>
+      <div className={s.name}>{d.meta.kind === 'episode' ? d.meta.show : d.meta.name}</div>
       <div className={s.sub}>{active ? `Downloading… ${d.total ? Math.round((d.received / d.total) * 100) : 0}%` : `${sub}${sub ? ' · ' : ''}${size(d.received)}`}</div>
     </div>
   )

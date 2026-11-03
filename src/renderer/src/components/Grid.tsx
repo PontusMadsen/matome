@@ -50,7 +50,7 @@ export function Card({ t, onOpen, onPlay, progress, index }: { t: MergedTitle; o
     return items
   })
   return (
-    <div className={`${s.card} ${offline ? s.offline : ''} ${index !== undefined ? s.stag : ''}`} title={t.title} tabIndex={0} role="button" onClick={(e) => onOpen?.(t, e.currentTarget)} onContextMenu={onContextMenu} onKeyDown={(e) => e.key === 'Enter' && onOpen?.(t, e.currentTarget)} data-tid={t.id} style={index !== undefined ? ({ '--i': index } as React.CSSProperties) : undefined}>
+    <div className={`${s.card} ${offline ? s.offline : ''} ${index !== undefined ? s.stag : ''}`} aria-label={t.title} tabIndex={0} role="button" onClick={(e) => onOpen?.(t, e.currentTarget)} onContextMenu={onContextMenu} onKeyDown={(e) => e.key === 'Enter' && onOpen?.(t, e.currentTarget)} data-tid={t.id} style={index !== undefined ? ({ '--i': index } as React.CSSProperties) : undefined}>
       {menu}
       <div className={s.poster} data-poster>
         <Poster urls={t.posters} title={t.title} />
@@ -58,7 +58,6 @@ export function Card({ t, onOpen, onPlay, progress, index }: { t: MergedTitle; o
           <button
             className={s.play}
             aria-label={`${progress ? 'Resume' : 'Play'} ${t.title}`}
-            title={progress ? 'Resume' : 'Play'}
             onClick={(e) => { e.stopPropagation(); const card = e.currentTarget.closest('[data-tid]') as HTMLElement; if (onPlay) onPlay(card); else onOpen?.(t, card, { next: true }) }}
             onKeyDown={(e) => e.stopPropagation()}
           >
@@ -66,9 +65,9 @@ export function Card({ t, onOpen, onPlay, progress, index }: { t: MergedTitle; o
           </button>
           <span className={s.hint}>Details</span>
         </div>
-        <button className={s.more} aria-label={`More for ${t.title}`} title="More" onClick={openMenu} onKeyDown={(e) => e.stopPropagation()}><Icon name="more" size={16} fill /></button>
-        {t.unwatchedCount > 0 && <span className={s.pill} title={`${t.unwatchedCount} unwatched episode${t.unwatchedCount > 1 ? 's' : ''}`}>{t.unwatchedCount}</span>}
-        {t.type === 'movie' && t.watched && <span className={s.seen} title="Watched"><Icon name="check" size={13} /></span>}
+        <button className={s.more} aria-label={`More for ${t.title}`} onClick={openMenu} onKeyDown={(e) => e.stopPropagation()}><Icon name="more" size={16} fill /></button>
+        {t.unwatchedCount > 0 && <span className={s.pill} role="img" aria-label={`${t.unwatchedCount} unwatched episode${t.unwatchedCount > 1 ? 's' : ''}`}>{t.unwatchedCount}</span>}
+        {t.type === 'movie' && t.watched && <span className={s.seen} aria-label="Watched" role="img"><Icon name="check" size={13} /></span>}
         {progress !== undefined && progress > 0 && <div className={s.bar}><i style={{ width: `${Math.min(100, progress * 100)}%` }} /></div>}
       </div>
       <div className={s.name}>{t.title}</div>
@@ -81,7 +80,7 @@ export function Card({ t, onOpen, onPlay, progress, index }: { t: MergedTitle; o
 export function ContinueTile({ c, onOpen }: { c: ContinueItem; onOpen: (el: HTMLElement) => void }) {
   const pct = c.durationMs ? c.viewOffsetMs / c.durationMs : 0
   return (
-    <div className={s.card} title={c.title} tabIndex={0} role="button" onClick={(e) => onOpen(e.currentTarget)} onKeyDown={(e) => e.key === 'Enter' && onOpen(e.currentTarget)} data-testid="continue-tile">
+    <div className={s.card} aria-label={c.title} tabIndex={0} role="button" onClick={(e) => onOpen(e.currentTarget)} onKeyDown={(e) => e.key === 'Enter' && onOpen(e.currentTarget)} data-testid="continue-tile">
       <div className={s.poster} data-poster>
         <Poster urls={c.poster ? [c.poster] : []} title={c.title} />
         <div className={s.hover}>
