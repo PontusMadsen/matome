@@ -1,3 +1,2 @@
-.logo { display: flex; align-items: center; gap: 10px; margin: -4px 0 18px 6px; user-select: none; }
-.symbol { height: 34px; width: auto; display: block; }
-.word { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); line-height: 1; }
+.logo { display: flex; align-items: center; margin: 0 0 20px 6px; user-select: none; }
+.lockup { height: 32px; width: auto; display: block; }

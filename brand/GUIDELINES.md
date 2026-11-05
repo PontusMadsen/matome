@@ -1,47 +1,40 @@
-# Fläx — Logo Guidelines (compact)
+# Matome: logo guidelines
 
 ## 1. The logo
-- **Idea**: two libraries interleave, row by row, into one play-shaped wedge. Alternate rows are the two sources; the shared 45° edge is the merge.
-- **Versions**: horizontal (primary) · stacked · symbol · wordmark · small-size symbol (5 bars)
-- **Files**: `svg/` masters + one-colour variants + PNGs · `web/` favicon.ico, PNG icon set, `site.webmanifest`, `head-snippet.html`
-- All shapes are filled paths (no live text, no strokes, no effects).
+- **Idea:** one library, in one tidy player. A screen curves around a round tile, with controls below.
+- **Versions:** horizontal lockup (primary), stacked lockup, symbol, wordmark, small symbol.
+- **Files:** `symbol/`, `lockup/`, `wordmark/` each hold SVGs in teal, teal-light, ink, black and white. App icons are in `app-icon/` and web icons in `web/`.
+- The wordmark is always plain ASCII "Matome", capital M. The Japanese まとめ is optional and sits apart from the logo, never inside it.
 
 ## 2. Clear space
-Keep **1 bar height** (the thickness of one symbol bar) clear on all sides. In the horizontal lockup that is 1/12 of the symbol height. It scales with the logo.
+Keep one round-tile diameter clear on all sides, measured from the logo's edge. It scales with the logo.
 
 ## 3. Minimum size
-| Version | Screen | Print |
+| Version | On screen | Use |
 |---|---|---|
-| Horizontal | 110 px wide | 28 mm wide |
-| Stacked | 80 px wide | 20 mm wide |
-| Symbol (7 bars) | 32 px | 8 mm |
-| Symbol small cut (5 bars, `flax-symbol-small.svg` / `-favicon.svg`) | 16 px | 5 mm |
-
-Below 32 px always use the small cut. Favicons and app icons already do.
+| Horizontal lockup | 120 px wide | Headers, DMG window, GitHub page |
+| Stacked lockup | 80 px wide | Square spaces |
+| Symbol | 25 px | Sidebar (34 px), Finder, Dock |
+| Small symbol | 16 to 24 px | Favicon and tiny UI only, never larger |
 
 ## 4. Colour
 | Name | HEX | RGB | CMYK (approx.) | Use |
 |---|---|---|---|---|
-| Flax Teal | #0B8F86 | 11 143 134 | 92 0 6 44 | Symbol on light, tiles, app icon |
-| Flax Teal Light | #2DD4BF | 45 212 191 | 79 0 10 17 | Symbol on dark only |
-| Ink | #0E1116 | 14 17 22 | 36 23 0 91 | Wordmark on light, dark surfaces |
-| White | #FFFFFF | 255 255 255 | 0 0 0 0 | Reversed |
+| Teal | #0B8F86 | 11 143 134 | 92 0 6 44 | Logo on light backgrounds |
+| Teal-light | #2DD4BF | 45 212 191 | 79 0 10 17 | Logo on dark backgrounds |
+| Ink | #0E1116 | 14 17 22 | 36 23 0 91 | Dark backgrounds, one-colour on light |
 
-CMYK values are calculated conversions, not proofed. Pantone is not assigned: match to a printed proof.
+**Approved pairs:** teal on white (3.97:1), teal-light on ink (10.16:1), ink on white, white on ink, black on white and white on black for the Classic Mac skin.
 
-**Contrast**: Ink on white 18.9:1. Teal on white 4.0:1 (large graphics only, never body text). White on teal 4.0:1 (symbol/large only). Teal Light on Ink 10.2:1.
+**Avoid:** teal-light on white (1.86:1, too faint). Teal on white passes for graphics at 3:1 but not for small body text at 4.5:1, so don't use it for that.
 
-**Approved pairs**: teal symbol + ink wordmark on white · teal-light symbol + white wordmark on Ink · white on Flax Teal · black on white · white on black.
-One-colour files: `*-black.svg`, `*-white.svg`, `*-mono-0b8f86.svg`.
+CMYK values are calculated conversions, not press-tested. No Pantone match has been chosen.
 
 ## 5. Typography
-The wordmark is custom-drawn from the symbol's bar (20-unit stroke, full round caps); it is not a font and must not be retyped.
-For UI/body copy pair it with a friendly geometric sans, e.g. Inter or Nunito Sans (both open licence). Not yet decided: confirm before use.
+The wordmark is custom-drawn outlines and uses no font. Don't retype it. No companion typeface has been chosen.
 
 ## 6. Don'ts
-Don't stretch, rotate or recolour outside the palette · no shadows, outlines or gradients · don't change bar lengths or row offsets · don't use the 7-bar symbol under 32 px · don't use Teal Light on white · don't retype the wordmark · don't place on busy photos without a solid container.
+Don't stretch, rotate or recolour outside the palette. Don't add shadows, outlines or gradients. Don't rearrange the parts of a lockup or the tiles in the symbol. Don't add a play triangle. Don't use the Plex amber or chevron near the logo in a way that suggests Plex made or endorses Matome.
 
-## 7. Open items
-- Trademark/design search not done (class 9/38/41; check "Flax" marks and similar bar-wedge icons).
-- Reads as audio waveform to some viewers; confirm in context with the app UI.
-- Mockup sample text (names, email) is placeholder.
+## 7. Master files
+`src/build.py` generates the black masters and `make_svgs.py` generates the colour variants.
