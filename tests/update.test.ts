@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { bundlePath, compareVersions, isNewer, parseRelease, parseSums, parseVersion, swapScript, teamIdOf } from '../src/main/update-logic'
+import { swapBlocker, bundlePath, compareVersions, isNewer, parseRelease, parseSums, parseVersion, swapScript, teamIdOf } from '../src/main/update-logic'
 
 const sha = 'a'.repeat(64)
 const rel = (over = {}) => ({
@@ -50,4 +50,17 @@ test('swap script waits for pid, keeps backup, restores on failure, quotes paths
   expect(s).toContain("'/Users/o'\\''brien/Applications/Matome.app'")
   expect(s).toContain('restoring')
   expect(s).toContain('xattr -cr')
+})
+
+test('swapBlocker: a disk image or a quarantined download cannot be replaced in place', () => {
+  expect(swapBlocker('/Applications/Matome.app')).toBeNull()
+  expect(swapBlocker('/Users/me/Applications/Matome.app')).toBeNull()
+  expect(swapBlocker('/Volumes/Matome 0.10.2/Matome.app')).toMatch(/Applications folder/)
+  expect(swapBlocker('/private/var/folders/x/AppTranslocation/ABC/d/Matome.app')).toMatch(/Applications folder/)
+})
+
+test('swap script keeps and reopens the old app when it cannot be moved aside', () => {
+  const s = swapScript({ pid: 1, bundle: '/Applications/Matome.app', newBundle: '/tmp/n/Matome.app', log: '/tmp/l' })
+  expect(s).toContain('if ! mv')
+  expect(s).toContain('keeping it')
 })

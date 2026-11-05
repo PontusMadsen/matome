@@ -49,6 +49,16 @@ export const bundlePath = (execPath: string): string | null => {
   return m?.[1] ?? null
 }
 
+/**
+ * Where the running app lives decides whether it can replace itself: from a mounted disk image (/Volumes) or from
+ * macOS's randomised path for apps run straight out of Downloads (AppTranslocation) the folder is read-only.
+ */
+export function swapBlocker(bundle: string): string | null {
+  if (bundle.startsWith('/Volumes/') || bundle.includes('/AppTranslocation/'))
+    return 'Matome is running from a disk image or a download folder, so it cannot replace itself there. Drag Matome into the Applications folder, open it from there, and try again.'
+  return null
+}
+
 /** Extracts the Team ID from `codesign -dv` output. */
 export const teamIdOf = (codesignOutput: string): string | null => /TeamIdentifier=([A-Z0-9]{10})/.exec(codesignOutput)?.[1] ?? null
 
@@ -62,7 +72,11 @@ echo "== update $(date)"
 while kill -0 ${o.pid} 2>/dev/null; do sleep 0.3; done
 BK=${q(o.bundle + '.old')}
 rm -rf "$BK"
-mv ${q(o.bundle)} "$BK" || exit 1
+if ! mv ${q(o.bundle)} "$BK"; then
+  echo "could not move the old app aside (no permission?); keeping it"
+  open ${q(o.bundle)}
+  exit 1
+fi
 if ditto ${q(o.newBundle)} ${q(o.bundle)}; then
   xattr -cr ${q(o.bundle)} 2>/dev/null
   rm -rf "$BK"
