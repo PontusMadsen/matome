@@ -403,6 +403,18 @@ test('cards: the ⋮ shows only on hover; the round button plays, the rest of th
   await expect(page.locator('[data-player]')).toBeVisible()
 })
 
+test('episodes show when they aired, with a tag for new and for not-yet-aired ones', async ({ page }) => {
+  await page.getByRole('button', { name: 'TV Shows' }).click()
+  await settle(page)
+  await page.locator('[data-tid]').first().click()
+  const rows = page.locator('[class*="_ep_"]')
+  await expect(rows.nth(0)).toContainText('2024') // aired long ago: date only
+  await expect(rows.nth(0)).not.toContainText('New')
+  await expect(rows.nth(1)).toContainText('New') // three days ago
+  await expect(rows.nth(2)).toContainText('Upcoming')
+  await expect(rows.nth(3)).not.toContainText('Upcoming') // no date known: nothing shown
+})
+
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {
   const heroes = page.getByTestId('continue-hero')
   for (const [width, expected] of [[820, 1], [1360, 2], [1920, 3]] as const) {

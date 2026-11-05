@@ -31,7 +31,7 @@ export function installMock(): void {
   let prefs = { excludedServers: [] as string[], maxBitrateKbps: 2000, useMpv: false, autoSkipIntro: false, playbackSpeed: 1, audioBoostPct: 0, subScale: 1, hideWatchedOnHome: false, skin: 'default' as string }
   const movies = mk('movie')
   const shows = mk('show')
-  const eps = [1, 2, 3, 4].map((n) => ({ season: 3, episode: n, title: `Episode ${n}`, summary: 'A summary.', durationMs: 3_000_000, watched: n < 2, viewOffsetMs: 0, sources: [{ serverId: 'a', serverName: 'Home server', ratingKey: '9', online: true, connectionPref: 1 }] }))
+  const eps = [1, 2, 3, 4].map((n) => ({ season: 3, episode: n, title: `Episode ${n}`, summary: 'A summary.', durationMs: 3_000_000, airDate: n === 1 ? '2024-03-14' : n === 2 ? new Date(Date.now() - 3 * 86_400_000).toISOString().slice(0, 10) : n === 3 ? new Date(Date.now() + 5 * 86_400_000).toISOString().slice(0, 10) : undefined, watched: n < 2, viewOffsetMs: 0, sources: [{ serverId: 'a', serverName: 'Home server', ratingKey: '9', online: true, connectionPref: 1 }] }))
   const calls: { c: string; r: unknown }[] = []
   const handlers: Record<string, (r: any) => unknown> = {
     'auth:state': () => ({ signedIn: true }),
