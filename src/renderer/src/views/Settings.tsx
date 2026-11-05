@@ -18,7 +18,7 @@ function Updates() {
   const [busy, setBusy] = useState(false)
   const { data } = useQuery({
     queryKey: ['update'],
-    queryFn: () => window.flax.invoke('update:status', undefined),
+    queryFn: () => window.matome.invoke('update:status', undefined),
     refetchInterval: (q) => (busy || q.state.data?.state === 'checking' || q.state.data?.state === 'downloading' ? 700 : 3000),
   })
   if (!data) return null
@@ -26,7 +26,7 @@ function Updates() {
   const working = busy || data.state === 'checking' || data.state === 'downloading'
   const check = () => {
     setBusy(true)
-    void window.flax.invoke('update:check', undefined).finally(() => { setBusy(false); void inval() })
+    void window.matome.invoke('update:check', undefined).finally(() => { setBusy(false); void inval() })
   }
   const status =
     data.state === 'error' ? data.error
@@ -52,7 +52,7 @@ function Updates() {
               )}
             </div>
             {data.state === 'ready' ? (
-              <button className="btn btn-primary" onClick={() => void window.flax.invoke('update:apply', undefined)}>Restart to update</button>
+              <button className="btn btn-primary" onClick={() => void window.matome.invoke('update:apply', undefined)}>Restart to update</button>
             ) : (
               <button className="btn" disabled={working} onClick={check}><Icon name="refresh" size={15} /> {working ? 'Working…' : 'Check now'}</button>
             )}
@@ -68,9 +68,9 @@ export function Settings() {
   const { data: servers = [] } = useServers()
   const refresh = useRefresh()
   const qc = useQueryClient()
-  const { data: prefs } = useQuery({ queryKey: ['settings'], queryFn: () => window.flax.invoke('settings:get', undefined) })
+  const { data: prefs } = useQuery({ queryKey: ['settings'], queryFn: () => window.matome.invoke('settings:get', undefined) })
   const [busy, setBusy] = useState(false)
-  const save = (p: Prefs) => window.flax.invoke('settings:set', p).then(() => qc.invalidateQueries())
+  const save = (p: Prefs) => window.matome.invoke('settings:set', p).then(() => qc.invalidateQueries())
   return (
     <ScrollPage className={s.page}>
       <div className={s.cols}>
@@ -83,15 +83,15 @@ export function Settings() {
                 <div className={s.hint}>{servers.length} server{servers.length === 1 ? '' : 's'} found</div>
               </div>
               <button className="btn" disabled={busy} onClick={() => { setBusy(true); void refresh().finally(() => setBusy(false)) }}><Icon name="refresh" size={15} /> {busy ? 'Syncing…' : 'Refresh now'}</button>
-              <button className="btn" onClick={() => void window.flax.invoke('auth:signOut', undefined).then(() => qc.invalidateQueries())}>Sign out</button>
+              <button className="btn" onClick={() => void window.matome.invoke('auth:signOut', undefined).then(() => qc.invalidateQueries())}>Sign out</button>
             </div>
           ) : (
             <div className={s.row}>
               <div className={s.grow}>
                 <div className={s.label}>Not signed in</div>
-                <div className={`${s.hint} ${auth?.error ? s.err : ''}`}>{auth?.error ?? (auth?.pending ? 'Waiting for you to approve in the browser…' : 'A browser window opens; approve Fläx there, then come back.')}</div>
+                <div className={`${s.hint} ${auth?.error ? s.err : ''}`}>{auth?.error ?? (auth?.pending ? 'Waiting for you to approve in the browser…' : 'A browser window opens; approve Matome there, then come back.')}</div>
               </div>
-              <button className="btn btn-primary" onClick={() => void window.flax.invoke('auth:start', undefined)}>Sign in with Plex</button>
+              <button className="btn btn-primary" onClick={() => void window.matome.invoke('auth:start', undefined)}>Sign in with Plex</button>
             </div>
           )}
         </section>

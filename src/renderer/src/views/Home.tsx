@@ -13,7 +13,7 @@ export function Home({ onOpen }: { onOpen: (t: MergedTitle, el?: HTMLElement | n
   const movies = useLibrary('movie')
   const shows = useLibrary('show')
   const [play, setPlay] = useState<PlayTarget | null>(null)
-  const prefs = useQuery({ queryKey: ['settings'], queryFn: () => window.flax.invoke('settings:get', undefined) })
+  const prefs = useQuery({ queryKey: ['settings'], queryFn: () => window.matome.invoke('settings:get', undefined) })
   const hide = prefs.data?.hideWatchedOnHome ?? false
   const byId = useMemo(() => new Map([...(movies.data ?? []), ...(shows.data ?? [])].map((t) => [t.id, t])), [movies.data, shows.data])
   const recent = (xs: MergedTitle[] = []) => [...xs].sort((a, b) => b.addedAt - a.addedAt).slice(0, 24)

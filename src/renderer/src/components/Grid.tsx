@@ -36,7 +36,7 @@ export function Card({ t, onOpen, onPlay, progress, index }: { t: MergedTitle; o
     { label: 'Open', onSelect: () => onOpen?.(t) },
     {
       label: isWatched ? 'Mark as unwatched' : 'Mark as watched',
-      onSelect: () => void window.flax.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), refreshContinue(qc)])),
+      onSelect: () => void window.matome.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), refreshContinue(qc)])),
     },
     ]
     const dl = downloadable(t.sources, perms)
@@ -44,8 +44,8 @@ export function Card({ t, onOpen, onPlay, progress, index }: { t: MergedTitle; o
     const refresh = () => Promise.all([qc.invalidateQueries({ queryKey: ['watchlist'] }), qc.invalidateQueries({ queryKey: ['search'] })])
     items.push(
       onList
-        ? { label: 'Remove from Watchlist', onSelect: () => void window.flax.invoke('watchlist:set', { ratingKey: onList.ratingKey, on: false }).then(refresh).catch((e: Error) => window.alert(e.message)) }
-        : { label: 'Add to Watchlist', onSelect: () => void window.flax.invoke('title:addToWatchlist', { id: t.id }).then(refresh).catch((e: Error) => window.alert(e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, ''))) },
+        ? { label: 'Remove from Watchlist', onSelect: () => void window.matome.invoke('watchlist:set', { ratingKey: onList.ratingKey, on: false }).then(refresh).catch((e: Error) => window.alert(e.message)) }
+        : { label: 'Add to Watchlist', onSelect: () => void window.matome.invoke('title:addToWatchlist', { id: t.id }).then(refresh).catch((e: Error) => window.alert(e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, ''))) },
     )
     return items
   })

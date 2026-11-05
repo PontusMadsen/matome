@@ -2,10 +2,10 @@ import { app } from 'electron'
 import { appendFileSync, existsSync, renameSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-/** Append-only diagnostics log (never contains tokens): ~/Library/Application Support/Flax/flax.log */
+/** Append-only diagnostics log (never contains tokens): ~/Library/Application Support/Matome/matome.log */
 export function log(msg: string): void {
   try {
-    const f = join(app.getPath('userData'), 'flax.log')
+    const f = join(app.getPath('userData'), 'matome.log')
     if (existsSync(f) && statSync(f).size > 1_000_000) renameSync(f, f + '.old')
     appendFileSync(f, `${new Date().toISOString()} ${msg}\n`)
   } catch {

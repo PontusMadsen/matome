@@ -6,6 +6,8 @@ import { clientIdentity } from './session'
 import { openDb } from './db'
 import { Updater } from './updater'
 import { loadWindowState, trackWindowState } from './window-state'
+import { migrateFromFlax } from './migrate'
+import { log } from './log'
 
 function createWindow(): void {
   const st = loadWindowState()
@@ -28,11 +30,18 @@ function createWindow(): void {
 }
 
 protocol.registerSchemesAsPrivileged([
-  // `standard` is required so relative URLs inside HLS playlists resolve against flax-stream://<server>/...
-  { scheme: 'flax-img', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } },
-  { scheme: 'flax-local', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true, corsEnabled: true } },
-  { scheme: 'flax-stream', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true, corsEnabled: true } },
+  // `standard` is required so relative URLs inside HLS playlists resolve against matome-stream://<server>/...
+  { scheme: 'matome-img', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } },
+  { scheme: 'matome-local', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true, corsEnabled: true } },
+  { scheme: 'matome-stream', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true, corsEnabled: true } },
 ])
+
+try {
+  const moved = migrateFromFlax(app.getPath('appData'))
+  if (moved.length) log(`renamed from Flax: carried over ${moved.join(', ')}`)
+} catch (e) {
+  log(`migration from Flax failed: ${e instanceof Error ? e.message : String(e)}`)
+}
 
 void app.whenReady().then(() => {
   const svc = new Service(openDb(join(app.getPath('userData'), 'cache.db')), clientIdentity(), join(app.getPath('userData'), 'settings.json'), join(app.getPath('userData'), 'img-cache'))

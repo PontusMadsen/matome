@@ -7,11 +7,11 @@ export function isAllowedImageUrl(u: URL): boolean {
   return true
 }
 
-/** `flax-img://remote/<encoded https url>` for absolute poster URLs, `flax-img://discover/<path>` for Discover-relative ones. */
+/** `matome-img://remote/<encoded https url>` for absolute poster URLs, `matome-img://discover/<path>` for Discover-relative ones. */
 export function posterUrl(thumb: string | undefined): string | undefined {
   if (!thumb) return undefined
-  if (/^https?:\/\//i.test(thumb)) return `flax-img://remote/${encodeURIComponent(thumb)}`
-  if (thumb.startsWith('/')) return `flax-img://discover${thumb}`
+  if (/^https?:\/\//i.test(thumb)) return `matome-img://remote/${encodeURIComponent(thumb)}`
+  if (thumb.startsWith('/')) return `matome-img://discover${thumb}`
   return undefined
 }
 

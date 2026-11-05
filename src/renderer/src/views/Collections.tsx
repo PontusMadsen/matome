@@ -8,8 +8,8 @@ import s from './Page.module.css'
 import { ScrollPage } from '../components/ScrollPage'
 
 export function Collections({ onOpen }: { onOpen: (t: MergedTitle, el?: HTMLElement | null) => void }) {
-  const cols = useQuery({ queryKey: ['collections'], queryFn: () => window.flax.invoke('collections:list', undefined), staleTime: 300_000 })
-  const pls = useQuery({ queryKey: ['playlists'], queryFn: () => window.flax.invoke('playlists:list', undefined) })
+  const cols = useQuery({ queryKey: ['collections'], queryFn: () => window.matome.invoke('collections:list', undefined), staleTime: 300_000 })
+  const pls = useQuery({ queryKey: ['playlists'], queryFn: () => window.matome.invoke('playlists:list', undefined) })
   const movies = useLibrary('movie')
   const shows = useLibrary('show')
   const byId = useMemo(() => new Map([...(movies.data ?? []), ...(shows.data ?? [])].map((t) => [t.id, t])), [movies.data, shows.data])

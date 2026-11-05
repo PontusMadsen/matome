@@ -12,7 +12,7 @@ export function plexHeaders(id: ClientIdentity, token?: string): Record<string, 
   const h: Record<string, string> = {
     Accept: 'application/json',
     'X-Plex-Client-Identifier': id.clientId,
-    'X-Plex-Product': 'Flax',
+    'X-Plex-Product': 'Matome',
     'X-Plex-Version': id.version,
     'X-Plex-Platform': id.platform,
   }

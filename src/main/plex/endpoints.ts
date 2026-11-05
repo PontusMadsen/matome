@@ -9,7 +9,7 @@ export const hosts = {
 export const pinsUrl = (strong = true) => `${hosts.plexTv}/api/v2/pins?strong=${strong}`
 export const pinUrl = (id: number) => `${hosts.plexTv}/api/v2/pins/${id}`
 export const resourcesUrl = () => `${hosts.plexTv}/api/v2/resources?includeHttps=1&includeRelay=1`
-export const authAppUrl = (clientId: string, code: string, product = 'Flax') =>
+export const authAppUrl = (clientId: string, code: string, product = 'Matome') =>
   `https://app.plex.tv/auth#?clientID=${encodeURIComponent(clientId)}&code=${encodeURIComponent(code)}&context%5Bdevice%5D%5Bproduct%5D=${encodeURIComponent(product)}`
 
 export const sectionsPath = () => '/library/sections'

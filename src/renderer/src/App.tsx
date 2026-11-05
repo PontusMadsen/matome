@@ -5,8 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { MergedTitle } from '@shared/types'
 import s from './App.module.css'
 import { Icon, type IconName } from './components/Icon'
-import logo from './assets/flax-horizontal-dark.svg'
-import logoInk from './assets/flax-horizontal-ink.svg'
+import { Logo } from './components/Logo'
 import { applySkin } from './skins'
 import { useDownloads, useServers } from './api'
 import { Detail, type AutoPlay } from './views/Detail'
@@ -49,10 +48,10 @@ export function App() {
   const [open, setOpen] = useState<MergedTitle | null>(null)
   const [srv, setSrv] = useState<string | null>(null)
   const [auto, setAuto] = useState<AutoPlay | undefined>()
-  const upd = useQuery({ queryKey: ['update'], queryFn: () => window.flax.invoke('update:status', undefined), refetchInterval: 5000 })
+  const upd = useQuery({ queryKey: ['update'], queryFn: () => window.matome.invoke('update:status', undefined), refetchInterval: 5000 })
   const servers = useServers()
   const [palette, setPalette] = useState(false)
-  const prefs = useQuery({ queryKey: ['settings'], queryFn: () => window.flax.invoke('settings:get', undefined) })
+  const prefs = useQuery({ queryKey: ['settings'], queryFn: () => window.matome.invoke('settings:get', undefined) })
   useEffect(() => { if (prefs.data) applySkin(prefs.data.skin) }, [prefs.data])
   const openRef = useRef(open)
   openRef.current = open
@@ -140,9 +139,7 @@ export function App() {
     <div className={s.shell}>
       <div className={s.drag} />
       <nav className={s.sidebar} data-ui="sidebar">
-        {/* Horizontal lockup, 124px wide: above the 110px minimum in the brand guidelines. */}
-        <img className={s.logo} data-logo="light-on-dark" src={logo} alt="Fläx" draggable={false} />
-        <img className={s.logo} data-logo="dark-on-light" src={logoInk} alt="" aria-hidden draggable={false} />
+        <Logo />
         <div className={s.navlist}>
           <div data-ui="ind" className={`${s.ind} ${open || view === 'Server' ? s.indoff : ''}`} style={{ '--i': idx } as React.CSSProperties} />
           {nav.map(({ v, icon }) => (
@@ -170,8 +167,8 @@ export function App() {
           <div className={s.update} style={{ marginTop: 44 }}>
             {upd.data.state === 'ready' ? (
               <>
-                <span>A new version of Fläx is ready.</span>
-                <button className="btn btn-primary" onClick={() => void window.flax.invoke('update:apply', undefined)}>Restart to update</button>
+                <span>A new version of Matome is ready.</span>
+                <button className="btn btn-primary" onClick={() => void window.matome.invoke('update:apply', undefined)}>Restart to update</button>
               </>
             ) : (
               <span>Downloading update…</span>

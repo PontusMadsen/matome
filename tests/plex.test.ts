@@ -19,7 +19,7 @@ test('headers carry required Plex identity fields', () => {
   expect(h).toMatchObject({
     'X-Plex-Token': 'T',
     'X-Plex-Client-Identifier': 'cid-1',
-    'X-Plex-Product': 'Flax',
+    'X-Plex-Product': 'Matome',
     'X-Plex-Version': '0.1.0',
     'X-Plex-Platform': 'test',
     Accept: 'application/json',

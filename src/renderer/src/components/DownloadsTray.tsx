@@ -17,7 +17,7 @@ export function DownloadsTray() {
     <aside className={s.tray} aria-label="Downloads">
       <div className={s.head}>
         <span>Downloads</span>
-        {finished && <button className={s.link} onClick={() => void window.flax.invoke('download:clear', undefined).then(refresh)}>Clear finished</button>}
+        {finished && <button className={s.link} onClick={() => void window.matome.invoke('download:clear', undefined).then(refresh)}>Clear finished</button>}
       </div>
       {data.map((d) => (
         <div key={d.id} className={s.row}>
@@ -27,14 +27,14 @@ export function DownloadsTray() {
               <div className={s.bar} role="progressbar" aria-valuenow={d.total ? Math.round((d.received / d.total) * 100) : undefined}><i style={{ width: d.total ? `${Math.min(100, (d.received / d.total) * 100)}%` : '35%' }} className={d.total ? '' : s.indet} /></div>
               <div className={s.meta}>
                 <span>{mb(d.received)}{d.total ? ` of ${mb(d.total)}` : ''}</span>
-                <button className={s.icon} aria-label={`Cancel download of ${d.title}`} title="Cancel" onClick={() => void window.flax.invoke('download:cancel', { id: d.id }).then(refresh)}><Icon name="close" size={14} /></button>
+                <button className={s.icon} aria-label={`Cancel download of ${d.title}`} title="Cancel" onClick={() => void window.matome.invoke('download:cancel', { id: d.id }).then(refresh)}><Icon name="close" size={14} /></button>
               </div>
             </>
           )}
           {d.state === 'done' && (
             <div className={s.meta}>
               <span>Saved · {mb(d.received)}</span>
-              <button className={s.link} onClick={() => void window.flax.invoke('download:reveal', { id: d.id })}>Show in Finder</button>
+              <button className={s.link} onClick={() => void window.matome.invoke('download:reveal', { id: d.id })}>Show in Finder</button>
             </div>
           )}
           {d.state === 'error' && <div className={`${s.meta} ${s.err}`} role="alert">{d.error ?? 'Download failed.'}</div>}

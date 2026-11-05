@@ -16,7 +16,7 @@ test('applyLive overlays state, drops excluded, marks unknown servers offline (c
 })
 
 test('settings round-trip and fall back to defaults', () => {
-  const f = join(mkdtempSync(join(tmpdir(), 'flax-')), 's.json')
+  const f = join(mkdtempSync(join(tmpdir(), 'matome-')), 's.json')
   expect(loadSettings(f)).toEqual(DEFAULT_SETTINGS)
   const custom = { ...DEFAULT_SETTINGS, excludedServers: ['x'], maxBitrateKbps: 4000 }
   saveSettings(f, custom)

@@ -73,7 +73,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
   const [rate, setRate] = useState(1)
   // Transcode cap: starts from the Settings default, changeable mid-playback (resumes at the same position).
   const [kbps, setKbps] = useState<number | null>(null)
-  useEffect(() => { void window.flax.invoke('settings:get', undefined).then((p) => { setKbps((cur) => cur ?? p.maxBitrateKbps); setAutoSkip(p.autoSkipIntro) }) }, [])
+  useEffect(() => { void window.matome.invoke('settings:get', undefined).then((p) => { setKbps((cur) => cur ?? p.maxBitrateKbps); setAutoSkip(p.autoSkipIntro) }) }, [])
   /** Where the next transcode session should start (absolute ms). */
   const resumeMs = useRef(target.startMs)
   /** Absolute ms that video.currentTime=0 corresponds to: Plex starts the stream at the requested offset. */
@@ -83,7 +83,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
   const [startReady, setStartReady] = useState(false)
   useEffect(() => {
     let off = false
-    void window.flax.invoke('play:resumePoint', { sources: target.sources.map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })) })
+    void window.matome.invoke('play:resumePoint', { sources: target.sources.map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })) })
       .then((ms) => { if (!off && ms > resumeMs.current) { resumeMs.current = ms; lastPos.current = ms; setCur(safeStartMs(ms, target.durationMs ?? 0)) } })
       .catch(() => undefined)
       .finally(() => { if (!off) setStartReady(true) })
@@ -114,7 +114,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
   const applyCues = useCallback(() => {
     const el = video.current
     if (!el) return
-    track.current ??= el.addTextTrack('subtitles', 'Flax', 'und')
+    track.current ??= el.addTextTrack('subtitles', 'Matome', 'und')
     const t = track.current
     while (t.cues && t.cues.length) t.removeCue(t.cues[0]!)
     const shift = base.current / 1000
@@ -135,7 +135,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
   useEffect(() => {
     if (!src) return
     let cancelled = false
-    void window.flax.invoke('play:streams', { serverId: src.serverId, ratingKey: src.ratingKey }).then((st) => {
+    void window.matome.invoke('play:streams', { serverId: src.serverId, ratingKey: src.ratingKey }).then((st) => {
       if (cancelled) return
       setAudioTracks(st.audio)
       setSubTracks(st.subtitles)
@@ -151,7 +151,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
   const report = useCallback(
     (state: 'playing' | 'paused' | 'stopped') => {
       if (!src) return Promise.resolve()
-      return window.flax.invoke('play:timeline', { serverId: src.serverId, ratingKey: src.ratingKey, state, timeMs: abs(), durationMs: durMs }).catch(() => undefined)
+      return window.matome.invoke('play:timeline', { serverId: src.serverId, ratingKey: src.ratingKey, state, timeMs: abs(), durationMs: durMs }).catch(() => undefined)
     },
     [src, abs, durMs],
   )
@@ -173,7 +173,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
         if (t === track.current || t.mode === 'disabled') continue
         t.mode = 'disabled'
         const k = `${t.kind}/${t.label || '-'}/${t.language || '-'}`
-        if (!logged.has(k)) { logged.add(k); void window.flax.invoke('app:log', { msg: `subtitles: switched off a track the stream turned on by itself (${k})` }) }
+        if (!logged.has(k)) { logged.add(k); void window.matome.invoke('app:log', { msg: `subtitles: switched off a track the stream turned on by itself (${k})` }) }
       }
     }
     el.textTracks.addEventListener('addtrack', quiet)
@@ -182,11 +182,11 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
     setWaiting(true)
     if (liveServer.current && liveServer.current !== src.serverId) {
       const old = liveServer.current
-      stopPending.current = window.flax.invoke('play:stop', { serverId: old, session: sessionId.current }).then(() => new Promise((r) => setTimeout(r, 500)))
+      stopPending.current = window.matome.invoke('play:stop', { serverId: old, session: sessionId.current }).then(() => new Promise((r) => setTimeout(r, 500)))
     }
     liveServer.current = src.serverId
     void stopPending.current
-      .then(() => (cancelled ? Promise.reject(new Error('cancelled')) : window.flax.invoke('play:start', { serverId: src.serverId, ratingKey: src.ratingKey, offsetMs: offset, partId, audioStreamId: audioId, subtitleStreamId: subId, subtitleMode: subMode, compat, session: sessionId.current, maxBitrateKbps: kbps })))
+      .then(() => (cancelled ? Promise.reject(new Error('cancelled')) : window.matome.invoke('play:start', { serverId: src.serverId, ratingKey: src.ratingKey, offsetMs: offset, partId, audioStreamId: audioId, subtitleStreamId: subId, subtitleMode: subMode, compat, session: sessionId.current, maxBitrateKbps: kbps })))
       .then(({ url }) => {
         if (cancelled) return
         setError('')
@@ -196,13 +196,13 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
           hls.current = h
           h.on(Hls.Events.ERROR, (_e, d) => {
             const detail = `${d.type}/${d.details}${d.response?.code ? ` HTTP ${d.response.code}` : ''}`
-            void window.flax.invoke('app:log', { msg: `hls ${d.fatal ? 'FATAL' : 'error'} ${src.serverName}: ${detail}` })
+            void window.matome.invoke('app:log', { msg: `hls ${d.fatal ? 'FATAL' : 'error'} ${src.serverName}: ${detail}` })
             if (!d.fatal) return
             // The server forgot our stream (segments answer 404): start a fresh session at the current position.
             if (isDeadSession(d) && deadRetries.current < 2) {
               deadRetries.current += 1
               resumeMs.current = base.current + el.currentTime * 1000
-              void window.flax.invoke('app:log', { msg: `stream session lost on ${src.serverName}; restarting at ${Math.round(resumeMs.current / 1000)}s (${deadRetries.current}/2)` })
+              void window.matome.invoke('app:log', { msg: `stream session lost on ${src.serverName}; restarting at ${Math.round(resumeMs.current / 1000)}s (${deadRetries.current}/2)` })
               setRestart((n) => n + 1)
               return
             }
@@ -210,7 +210,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
             if (d.details === 'manifestLoadError' && busyRetries.current < 2) {
               busyRetries.current += 1
               resumeMs.current = base.current + el.currentTime * 1000
-              void window.flax.invoke('app:log', { msg: `server busy? retry ${busyRetries.current}/2 on ${src.serverName}` })
+              void window.matome.invoke('app:log', { msg: `server busy? retry ${busyRetries.current}/2 on ${src.serverName}` })
               setTimeout(() => setRestart((n) => n + 1), 1500)
               return
             }
@@ -224,7 +224,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
             // Bare 400 with nothing exotic selected: retry once with the minimal parameter set before giving up on this server.
             if (!compat && d.details === 'manifestLoadError') {
               resumeMs.current = base.current + el.currentTime * 1000
-              void window.flax.invoke('app:log', { msg: `retrying ${src.serverName} with minimal parameters` })
+              void window.matome.invoke('app:log', { msg: `retrying ${src.serverName} with minimal parameters` })
               setCompat(true)
               return
             }
@@ -272,7 +272,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
     const el = video.current
     if (!localId || !el) return
     base.current = 0
-    el.src = `flax-local://file/${localId}`
+    el.src = `matome-local://file/${localId}`
     const onMeta = () => {
       const p = safeStartMs(target.local?.positionMs ?? 0, el.duration * 1000)
       if (p > 0) el.currentTime = p / 1000
@@ -282,7 +282,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
     const onErr = () => setError("This file's format can't be played here (try 'Open in default app').")
     el.addEventListener('loadedmetadata', onMeta, { once: true })
     el.addEventListener('error', onErr)
-    const save = () => void window.flax.invoke('download:position', { id: localId, ms: abs() })
+    const save = () => void window.matome.invoke('download:position', { id: localId, ms: abs() })
     const t = setInterval(save, 10_000)
     return () => {
       clearInterval(t)
@@ -297,7 +297,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
     const id = sessionId.current
     return () => {
       const sv = liveServer.current
-      if (sv) void window.flax.invoke('play:stop', { serverId: sv, session: id })
+      if (sv) void window.matome.invoke('play:stop', { serverId: sv, session: id })
     }
   }, [])
 
@@ -310,7 +310,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
       void report('stopped').then(() => {
         void qc.invalidateQueries({ queryKey: ['detail'] })
         void qc.invalidateQueries({ queryKey: ['episodes'] })
-        void window.flax.invoke('home:continue:refresh', undefined).then((fresh) => qc.setQueryData(['continue'], fresh)).catch(() => undefined)
+        void window.matome.invoke('home:continue:refresh', undefined).then((fresh) => qc.setQueryData(['continue'], fresh)).catch(() => undefined)
       })
     }
   }, [report])
@@ -340,7 +340,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
     const t = id === undefined ? undefined : subTracks.find((x) => x.id === id)
     if (t && src && isTextSubtitle(t.codec, t.format)) {
       try {
-        const { text } = await window.flax.invoke('subtitle:fetch', { serverId: src.serverId, streamId: t.id, key: t.key })
+        const { text } = await window.matome.invoke('subtitle:fetch', { serverId: src.serverId, streamId: t.id, key: t.key })
         const parsed = parseSubtitles(text)
         if (parsed.length === 0) throw new Error('no cues')
         cues.current = parsed
@@ -349,7 +349,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
         if (subId) changeTrack('sub', undefined) // stop burning a previous server-side choice
         return
       } catch (e) {
-        void window.flax.invoke('app:log', { msg: `client-side subtitles failed (${e instanceof Error ? e.message : String(e)}); using the server` })
+        void window.matome.invoke('app:log', { msg: `client-side subtitles failed (${e instanceof Error ? e.message : String(e)}); using the server` })
         setNote('Showing subtitles through the server instead…')
       }
     }
@@ -381,7 +381,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
   const markAll = useCallback(() => {
     if (marked.current) return
     marked.current = true
-    void Promise.all(target.sources.map((x) => window.flax.invoke('play:scrobble', { serverId: x.serverId, ratingKey: x.ratingKey }))).then(() => target.onWatched?.())
+    void Promise.all(target.sources.map((x) => window.matome.invoke('play:scrobble', { serverId: x.serverId, ratingKey: x.ratingKey }))).then(() => target.onWatched?.())
   }, [target])
   const onTime = () => {
     const v = video.current
@@ -510,7 +510,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
         <button className="btn" onClick={onClose}><Icon name="back" size={16} /> Back</button>
         <span className={s.title}>{target.title}</span>
         {error && <span className={s.err}>{error}</span>}
-        {error && local && <button className="btn" onClick={() => void window.flax.invoke('download:open', { id: local.id })}>Open in default app</button>}
+        {error && local && <button className="btn" onClick={() => void window.matome.invoke('download:open', { id: local.id })}>Open in default app</button>}
         {!error && note && <span className={s.err} style={{ color: 'var(--text)' }}>{note}</span>}
         {target.sources.length > 1 && (
           <select className={s.pill} value={srcIdx} onChange={(e) => { keepPlace(); setSrcIdx(Number(e.target.value)) }} title="Source" aria-label="Source">

@@ -295,7 +295,7 @@ export class Service {
             const d = await fetchDetail(this.id, info, cred.accessToken, sample.ratingKey)
             const key = d.Media?.[0]?.Part?.[0]?.key
             if (key) {
-              const res = await fetch(`${info.baseUrl}${key}?download=1`, { headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Flax', Range: 'bytes=0-0' }, signal: AbortSignal.timeout(8000) })
+              const res = await fetch(`${info.baseUrl}${key}?download=1`, { headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Matome', Range: 'bytes=0-0' }, signal: AbortSignal.timeout(8000) })
               void res.body?.cancel()
               ok = res.status === 401 || res.status === 403 ? false : res.ok ? true : null
             }
@@ -321,7 +321,7 @@ export class Service {
         if (!part?.key) continue
         const container = part.container ?? d.Media?.[0]?.container ?? part.file?.split('.').pop()
         // `download=1` is the same request Plex Web's Download uses; the server decides whether this account may.
-        return { url: `${info.baseUrl}${part.key}?download=1`, headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Flax' }, container }
+        return { url: `${info.baseUrl}${part.key}?download=1`, headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Matome' }, container }
       } catch (e) {
         lastError = e
       }
@@ -332,7 +332,7 @@ export class Service {
   /** Poster the Discover service serves by relative path (needs the account token). */
   async discoverImage(path: string): Promise<{ data: ArrayBuffer; type: string } | null> {
     if (!this.token) return null
-    return fetchRemoteImage(`${hosts.discover}${path}`, { 'X-Plex-Token': this.token, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Flax' })
+    return fetchRemoteImage(`${hosts.discover}${path}`, { 'X-Plex-Token': this.token, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Matome' })
   }
 
   async setWatchlist(ratingKey: string, on: boolean): Promise<void> {
@@ -450,7 +450,7 @@ export class Service {
     const info = this.infos.find((i) => i.id === serverId)
     const cred = this.creds.get(serverId)
     if (!info?.baseUrl || !cred) throw new Error('server unavailable')
-    const res = await fetch(`${info.baseUrl}${path}`, { method, headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Flax', Accept: 'application/json' }, signal: AbortSignal.timeout(8000) })
+    const res = await fetch(`${info.baseUrl}${path}`, { method, headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Matome', Accept: 'application/json' }, signal: AbortSignal.timeout(8000) })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
   }
 
@@ -472,7 +472,7 @@ export class Service {
     this.mpv = session
     await session.start(bin, this.settings, {
       url: `${info.baseUrl}${r.partKey}`,
-      headers: [`X-Plex-Token: ${cred.accessToken}`, `X-Plex-Client-Identifier: ${this.id.clientId}`, 'X-Plex-Product: Flax'],
+      headers: [`X-Plex-Token: ${cred.accessToken}`, `X-Plex-Client-Identifier: ${this.id.clientId}`, 'X-Plex-Product: Matome'],
       startMs: r.startMs,
       title: r.title,
       markers: r.markers,
@@ -566,7 +566,7 @@ export class Service {
     // Off is already stored on the server (subtitleStreamID=0), so 'auto' is enough and avoids an unverified value.
     const subtitles = r.subtitleMode ?? (r.subtitleStreamId ? 'burn' : 'auto')
     const path = transcodeStartPath(r.ratingKey, { offsetMs: r.offsetMs, session, subtitles, compat: r.compat, maxBitrateKbps: (r.maxBitrateKbps ?? this.settings.maxBitrateKbps) || undefined })
-    return { url: `flax-stream://${r.serverId}${path}`, session }
+    return { url: `matome-stream://${r.serverId}${path}`, session }
   }
 
 
@@ -581,7 +581,7 @@ export class Service {
     for (const path of subtitleCandidates(streamId, key)) {
       try {
         const res = await fetch(`${info.baseUrl}${path}`, {
-          headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Flax' },
+          headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Matome' },
           signal: AbortSignal.timeout(10_000),
         })
         const text = res.ok ? await res.text() : ''
@@ -600,7 +600,7 @@ export class Service {
     const cred = this.creds.get(serverId)
     if (!info?.baseUrl || !cred) return
     const res = await fetch(`${info.baseUrl}${stopSessionPath(session)}`, {
-      headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Flax', 'X-Plex-Session-Identifier': session },
+      headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Matome', 'X-Plex-Session-Identifier': session },
       signal: AbortSignal.timeout(8000),
     }).catch((e: unknown) => { log(`stop ${info.name}: ${e instanceof Error ? e.message : String(e)}`); return null })
     if (res && !res.ok) log(`stop ${info.name}: HTTP ${res.status}`)
@@ -611,7 +611,7 @@ export class Service {
     const info = this.infos.find((i) => i.id === serverId)
     const cred = this.creds.get(serverId)
     if (!info?.baseUrl || !cred) return
-    await fetch(`${info.baseUrl}${path}`, { headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Flax' }, signal: AbortSignal.timeout(8000) }).catch(() => undefined)
+    await fetch(`${info.baseUrl}${path}`, { headers: { 'X-Plex-Token': cred.accessToken, 'X-Plex-Client-Identifier': this.id.clientId, 'X-Plex-Product': 'Matome' }, signal: AbortSignal.timeout(8000) }).catch(() => undefined)
   }
 
   timeline(r: { serverId: string; ratingKey: string; state: 'playing' | 'paused' | 'stopped'; timeMs: number; durationMs: number }): Promise<void> {
@@ -626,7 +626,7 @@ export class Service {
     if (owner) await this.refreshTitle(owner.id)
   }
 
-  /** Authenticated pass-through for flax-stream:// (HLS playlists/segments). Forwards Range. */
+  /** Authenticated pass-through for matome-stream:// (HLS playlists/segments). Forwards Range. */
   async stream(serverId: string, pathAndQuery: string, range: string | null): Promise<Response> {
     const cors = { 'access-control-allow-origin': '*', 'access-control-expose-headers': '*' }
     const info = this.infos.find((i) => i.id === serverId)
@@ -638,7 +638,7 @@ export class Service {
     const headers: Record<string, string> = {
       'X-Plex-Token': cred.accessToken,
       'X-Plex-Client-Identifier': this.id.clientId,
-      'X-Plex-Product': 'Flax',
+      'X-Plex-Product': 'Matome',
       'X-Plex-Version': this.id.version,
       'X-Plex-Platform': 'Chrome',
       'X-Plex-Device': 'macOS',

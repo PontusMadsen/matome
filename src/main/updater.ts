@@ -13,7 +13,7 @@ const run = promisify(execFile)
 // Public releases: no credentials involved. Update this if the repository moves.
 const REPO = 'PontusMadsen/flax'
 const API = `https://api.github.com/repos/${REPO}`
-const HEADERS = { Accept: 'application/vnd.github+json', 'User-Agent': 'Flax', 'X-GitHub-Api-Version': '2022-11-28' }
+const HEADERS = { Accept: 'application/vnd.github+json', 'User-Agent': 'Matome', 'X-GitHub-Api-Version': '2022-11-28' }
 
 export class Updater {
   private status: UpdateStatus
@@ -55,7 +55,7 @@ export class Updater {
       this.set({ state: 'downloading', latest: info.version, progress: 0 })
       let sha = info.sha256
       if (!sha && info.sumsUrl) {
-        const r = await fetch(info.sumsUrl, { headers: { 'User-Agent': 'Flax' }, signal: AbortSignal.timeout(15000) })
+        const r = await fetch(info.sumsUrl, { headers: { 'User-Agent': 'Matome' }, signal: AbortSignal.timeout(15000) })
         if (r.ok) sha = parseSums(await r.text())[info.name] ?? null
       }
       if (!sha) throw new Error('Release has no checksum; refusing to install')
@@ -76,7 +76,7 @@ export class Updater {
     rmSync(dir, { recursive: true, force: true })
     mkdirSync(dir, { recursive: true })
     const ctrl = new AbortController()
-    const res = await fetch(url, { headers: { 'User-Agent': 'Flax' }, signal: ctrl.signal })
+    const res = await fetch(url, { headers: { 'User-Agent': 'Matome' }, signal: ctrl.signal })
     if (!res.ok || !res.body) throw new Error(`download failed: HTTP ${res.status}`)
     const total = Number(res.headers.get('content-length')) || 0
     let got = 0
@@ -136,7 +136,7 @@ export class Updater {
     if (this.status.state !== 'ready' || !this.newBundle || !bundle || !existsSync(this.newBundle)) return
     const dir = join(app.getPath('userData'), 'update')
     const script = join(dir, 'swap.sh')
-    writeFileSync(script, swapScript({ pid: process.pid, bundle, newBundle: this.newBundle, log: join(app.getPath('home'), 'Library/Logs/Flax-update.log') }))
+    writeFileSync(script, swapScript({ pid: process.pid, bundle, newBundle: this.newBundle, log: join(app.getPath('home'), 'Library/Logs/Matome-update.log') }))
     chmodSync(script, 0o755)
     spawn('/bin/bash', [script], { detached: true, stdio: 'ignore' }).unref()
     if (this.timer) clearInterval(this.timer)

@@ -18,7 +18,7 @@ export function DiscoverCard({ d, onOpenLocal }: { d: DiscoverItem; onOpenLocal:
     if (d.onWatchlist) { removedFromWatchlist.add(d.ratingKey); qc.setQueryData<DiscoverItem[]>(['watchlist'], (old) => old?.filter((x) => x.ratingKey !== d.ratingKey)) }
     else removedFromWatchlist.delete(d.ratingKey)
     try {
-      await window.flax.invoke('watchlist:set', { ratingKey: d.ratingKey, on: !d.onWatchlist })
+      await window.matome.invoke('watchlist:set', { ratingKey: d.ratingKey, on: !d.onWatchlist })
     } catch (e) {
       if (d.onWatchlist) removedFromWatchlist.delete(d.ratingKey)
       if (before) qc.setQueryData(['watchlist'], before)

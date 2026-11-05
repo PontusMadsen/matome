@@ -26,7 +26,7 @@ function Episode({ e, t, onPlay, onChanged }: { e: MergedEpisode; t: MergedTitle
     ...(dl.length === 0 ? [] : [{ label: 'Download…', onSelect: () => startDownload({ title: `${t.title} - S${String(e.season).padStart(2, '0')}E${String(e.episode).padStart(2, '0')} - ${e.title}`, meta: { kind: 'episode', name: e.title, show: t.title, season: e.season, episode: e.episode }, poster: t.posters[0], sources: dl }) }]),
     {
       label: e.watched ? 'Mark as unwatched' : 'Mark as watched',
-      onSelect: () => void window.flax.invoke('episode:setWatched', { titleId: t.id, sources: e.sources.map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })), watched: !e.watched }).then(onChanged),
+      onSelect: () => void window.matome.invoke('episode:setWatched', { titleId: t.id, sources: e.sources.map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })), watched: !e.watched }).then(onChanged),
     },
   ])
   const air = airLabel(e.airDate)
@@ -58,20 +58,20 @@ function Episode({ e, t, onPlay, onChanged }: { e: MergedEpisode; t: MergedTitle
 export type { AutoPlay }
 
 export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => void; auto?: AutoPlay }) {
-  const { data, error } = useQuery({ queryKey: ['detail', t.id], queryFn: () => window.flax.invoke('title:detail', { id: t.id }) })
+  const { data, error } = useQuery({ queryKey: ['detail', t.id], queryFn: () => window.matome.invoke('title:detail', { id: t.id }) })
   const [season, setSeason] = useState<number | null>(null)
   const [play, setPlay] = useState<PlayTarget | null>(null)
   const [pick, setPick] = useState(0)
   const qc = useQueryClient()
   const perms = useDownloadServers().data
-  const refreshAll = () => window.flax.invoke('title:refresh', { id: t.id }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), qc.invalidateQueries({ queryKey: ['episodes'] }), refreshContinue(qc)]))
+  const refreshAll = () => window.matome.invoke('title:refresh', { id: t.id }).then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), qc.invalidateQueries({ queryKey: ['episodes'] }), refreshContinue(qc)]))
   const act = (p: Promise<unknown>) => p.then(() => Promise.all([qc.invalidateQueries({ queryKey: ['library'] }), refreshContinue(qc)]))
   // Newest season first; Specials (season 0) last. Opens on the newest season.
   const seasons = [...(data?.seasons ?? [])].sort((a, b) => (a.index === 0 ? 1 : b.index === 0 ? -1 : b.index - a.index))
   useEffect(() => { if (seasons[0] && season === null) setSeason(seasons[0].index) }, [data, season])
   const eps = useQuery({
     queryKey: ['episodes', t.id, season],
-    queryFn: () => window.flax.invoke('title:episodes', { id: t.id, season: season! }),
+    queryFn: () => window.matome.invoke('title:episodes', { id: t.id, season: season! }),
     enabled: t.type === 'show' && season !== null,
   })
 
@@ -80,10 +80,10 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
   const ordered = [...online]
   if (pick > 0 && ordered[pick]) ordered.unshift(...ordered.splice(pick, 1))
 
-  const mpvOk = useQuery({ queryKey: ['mpv'], queryFn: () => window.flax.invoke('mpv:available', undefined) })
-  const prefs = useQuery({ queryKey: ['settings'], queryFn: () => window.flax.invoke('settings:get', undefined) })
+  const mpvOk = useQuery({ queryKey: ['mpv'], queryFn: () => window.matome.invoke('mpv:available', undefined) })
+  const prefs = useQuery({ queryKey: ['settings'], queryFn: () => window.matome.invoke('settings:get', undefined) })
   const [mpvErr, setMpvErr] = useState('')
-  const lists = useQuery({ queryKey: ['playlists'], queryFn: () => window.flax.invoke('playlists:list', undefined) })
+  const lists = useQuery({ queryKey: ['playlists'], queryFn: () => window.matome.invoke('playlists:list', undefined) })
   const addToList = (v: string) => {
     if (!v) return
     const src = ordered[0]
@@ -91,8 +91,8 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
     const [mode, a, b] = v.split('|')
     if (mode === 'new') {
       const name = window.prompt('New playlist name')
-      if (name) void window.flax.invoke('playlists:write', { serverId: src.serverId, titleId: t.id, newTitle: name }).then(() => qc.invalidateQueries({ queryKey: ['playlists'] }))
-    } else if (a && b) void window.flax.invoke('playlists:write', { serverId: a, titleId: t.id, playlistRatingKey: b }).then(() => qc.invalidateQueries({ queryKey: ['playlists'] }))
+      if (name) void window.matome.invoke('playlists:write', { serverId: src.serverId, titleId: t.id, newTitle: name }).then(() => qc.invalidateQueries({ queryKey: ['playlists'] }))
+    } else if (a && b) void window.matome.invoke('playlists:write', { serverId: a, titleId: t.id, playlistRatingKey: b }).then(() => qc.invalidateQueries({ queryKey: ['playlists'] }))
   }
 
   const playMovie = () => {
@@ -101,7 +101,7 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
     if (!pl) return
     if (prefs.data?.useMpv && mpvOk.data && pl.partKey) {
       setMpvErr('')
-      window.flax.invoke('mpv:play', { serverId: pl.serverId, ratingKey: pl.ratingKey, partKey: pl.partKey, title: t.title, startMs: furthest(data.playables), markers: pl.markers }).catch((e: Error) => setMpvErr(e.message))
+      window.matome.invoke('mpv:play', { serverId: pl.serverId, ratingKey: pl.ratingKey, partKey: pl.partKey, title: t.title, startMs: furthest(data.playables), markers: pl.markers }).catch((e: Error) => setMpvErr(e.message))
       return
     }
     setPlay({
@@ -190,7 +190,7 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
                 aria-pressed={isWatched}
                 title={isWatched ? 'Watched on every server. Click to mark as unwatched' : 'Mark as watched on every server'}
                 style={isWatched ? { color: 'var(--accent)', borderColor: 'var(--accent)' } : undefined}
-                onClick={() => void act(window.flax.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => qc.invalidateQueries({ queryKey: ['episodes'] })))}
+                onClick={() => void act(window.matome.invoke('title:setWatched', { id: t.id, watched: !isWatched }).then(() => qc.invalidateQueries({ queryKey: ['episodes'] })))}
               >
                 <Icon name="check" size={16} /> Watched
               </button>
@@ -199,7 +199,7 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
                   <Icon name="download" size={16} /> Download
                 </button>
               )}
-              <select aria-label="Your rating" defaultValue="" onChange={(e) => void act(window.flax.invoke('title:rate', { id: t.id, rating: e.target.value === '' ? null : Number(e.target.value) }))}>
+              <select aria-label="Your rating" defaultValue="" onChange={(e) => void act(window.matome.invoke('title:rate', { id: t.id, rating: e.target.value === '' ? null : Number(e.target.value) }))}>
                 <option value="">Rate…</option>
                 {[2, 4, 6, 8, 10].map((r) => <option key={r} value={r}>{'★'.repeat(r / 2)}</option>)}
               </select>
