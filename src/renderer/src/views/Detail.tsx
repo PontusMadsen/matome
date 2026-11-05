@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { MergedEpisode, MergedTitle, Source } from '@shared/types'
 import { Icon } from '../components/Icon'
+import { airLabel } from '../airdate'
 import { useContextMenu } from '../components/ContextMenu'
 import { Player, type PlayTarget } from '../components/Player'
 import { ScrollPage } from '../components/ScrollPage'
@@ -28,6 +29,7 @@ function Episode({ e, t, onPlay, onChanged }: { e: MergedEpisode; t: MergedTitle
       onSelect: () => void window.flax.invoke('episode:setWatched', { titleId: t.id, sources: e.sources.map((x) => ({ serverId: x.serverId, ratingKey: x.ratingKey })), watched: !e.watched }).then(onChanged),
     },
   ])
+  const air = airLabel(e.airDate)
   const pct = e.durationMs && e.viewOffsetMs ? Math.min(100, (e.viewOffsetMs / e.durationMs) * 100) : 0
   return (
     <div className={`${s.ep} ${e.watched ? s.watched : ''}`} onClick={onPlay} onContextMenu={onContextMenu}>
@@ -43,6 +45,7 @@ function Episode({ e, t, onPlay, onChanged }: { e: MergedEpisode; t: MergedTitle
         {e.summary && <div className={s.epsum}>{e.summary}</div>}
       </div>
       <div className={s.epmeta}>
+        {air && <span className={s.air} title={air.tag === 'New' ? 'Aired in the last two weeks' : air.tag === 'Upcoming' ? 'Not aired yet' : 'Air date'}>{air.tag && <b className={`${s.airtag} ${air.tag === 'Upcoming' ? s.upcoming : ''}`}>{air.tag}</b>}{air.text}</span>}
         {fmtDur(e.durationMs)}
         {e.watched && <span className={s.seen} title="Watched"><Icon name="check" size={16} /></span>}
         <button className={s.epmore} aria-label={`More for episode ${e.episode}`} title="More" onClick={openMenu}><Icon name="more" size={18} fill /></button>

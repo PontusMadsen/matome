@@ -26,7 +26,7 @@ beforeAll(async () => {
         },
         children: {
           '5': [{ ratingKey: '50', index: 1, title: 'Season 1', leafCount: 6 }],
-          '50': [{ ratingKey: '501', index: 1, parentIndex: 1, title: 'Pilot', viewCount: 1, thumb: '/t/501' }],
+          '50': [{ ratingKey: '501', index: 1, parentIndex: 1, title: 'Pilot', viewCount: 1, thumb: '/t/501', originallyAvailableAt: '2024-03-14' }],
         },
       },
     },
@@ -47,5 +47,5 @@ test('seasons and episodes', async () => {
   const seasons = await fetchSeasons(id, info, 't', '5')
   expect(seasons).toEqual([{ ratingKey: '50', index: 1, title: 'Season 1', episodeCount: 6 }])
   const eps = await fetchEpisodes(id, info, 't', '50')
-  expect(eps[0]).toMatchObject({ season: 1, episode: 1, title: 'Pilot', watched: true, thumb: 'flax-img://s/t/501' })
+  expect(eps[0]).toMatchObject({ season: 1, episode: 1, title: 'Pilot', watched: true, thumb: 'flax-img://s/t/501', airDate: '2024-03-14' })
 })

@@ -114,6 +114,8 @@ export interface MergedEpisode {
   durationMs?: number
   watched: boolean
   viewOffsetMs: number
+  /** when it first aired, YYYY-MM-DD (from Plex's metadata) */
+  airDate?: string
   sources: EpisodeSource[]
 }
 

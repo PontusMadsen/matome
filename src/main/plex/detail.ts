@@ -31,6 +31,8 @@ interface RawChild {
   leafCount?: number
   viewCount?: number
   viewOffset?: number
+  /** air date, YYYY-MM-DD */
+  originallyAvailableAt?: string
 }
 interface Meta<T> { MediaContainer: { Metadata?: T[] } }
 
@@ -98,5 +100,6 @@ export async function fetchEpisodes(id: ClientIdentity, s: ServerInfo, token: st
     durationMs: c.duration,
     watched: (c.viewCount ?? 0) > 0,
     viewOffsetMs: c.viewOffset ?? 0,
+    airDate: c.originallyAvailableAt,
   }))
 }
