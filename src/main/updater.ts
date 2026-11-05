@@ -11,7 +11,7 @@ import type { UpdateStatus } from '@shared/types'
 
 const run = promisify(execFile)
 // Public releases: no credentials involved. Update this if the repository moves.
-const REPO = 'PontusMadsen/flax'
+const REPO = 'PontusMadsen/matome'
 const API = `https://api.github.com/repos/${REPO}`
 const HEADERS = { Accept: 'application/vnd.github+json', 'User-Agent': 'Matome', 'X-GitHub-Api-Version': '2022-11-28' }
 
