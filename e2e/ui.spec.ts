@@ -389,6 +389,7 @@ test('cards: the ⋮ shows only on hover; the round button plays, the rest of th
   await card.hover()
   await expect.poll(() => more.evaluate((el) => getComputedStyle(el).opacity)).toBe('1')
   await expect(card.getByText('Details', { exact: true })).toBeVisible()
+  await expect(card.getByTestId('source-badge')).toHaveText('Home server +2') // best copy first (online, then local), plus how many more exist
   // no browser tooltip bubbles on a card or its buttons
   expect(await card.evaluate((el) => [el, ...el.querySelectorAll('*')].filter((n) => n.hasAttribute('title')).length)).toBe(0)
   // the card (not the button) opens the page, and nothing plays
