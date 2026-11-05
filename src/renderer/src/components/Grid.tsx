@@ -64,6 +64,7 @@ export function Card({ t, onOpen, onPlay, progress, index }: { t: MergedTitle; o
             <Icon name="play" size={20} fill />
           </button>
           <span className={s.hint}>Details</span>
+          {t.sources[0] && <span className={s.srcbadge} data-testid="source-badge">{t.sources[0].serverName}{t.sources.length > 1 ? ` +${t.sources.length - 1}` : ''}</span>}
         </div>
         <button className={s.more} aria-label={`More for ${t.title}`} onClick={openMenu} onKeyDown={(e) => e.stopPropagation()}><Icon name="more" size={16} fill /></button>
         {t.unwatchedCount > 0 && <span className={s.pill} role="img" aria-label={`${t.unwatchedCount} unwatched episode${t.unwatchedCount > 1 ? 's' : ''}`}>{t.unwatchedCount}</span>}
