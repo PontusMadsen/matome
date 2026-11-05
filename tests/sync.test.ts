@@ -38,7 +38,7 @@ test('sync merges across servers; slow server reported offline without blocking 
   expect(merged).toHaveLength(2)
   const matrix = merged.find((m) => m.title === 'The Matrix')!
   expect(matrix.sources).toHaveLength(2)
-  expect(matrix.poster).toMatch(/^flax-img:\/\//)
+  expect(matrix.poster).toMatch(/^matome-img:\/\//)
   expect(JSON.stringify(merged)).not.toContain('X-Plex-Token')
 })
 

@@ -1,5 +1,5 @@
 /**
- * Installs a fake `window.flax` (the preload bridge) with fixture data.
+ * Installs a fake `window.matome` (the preload bridge) with fixture data.
  * Passed to page.addInitScript, so it must be fully self-contained (no imports / closures).
  */
 export function installMock(): void {
@@ -74,7 +74,7 @@ export function installMock(): void {
     'play:streams': () => ({ audio: [], subtitles: [], markers: [] }),
   }
   ;(window as any).__calls = calls
-  ;(window as any).flax = {
+  ;(window as any).matome = {
     invoke: async (c: string, r: unknown) => {
       calls.push({ c, r })
       const h = handlers[c]

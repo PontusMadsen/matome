@@ -16,8 +16,8 @@ function Tile({ d, onPlay, onDelete }: { d: DownloadInfo; onPlay: () => void; on
   const active = d.state === 'active'
   const { onContextMenu, openMenu, menu } = useContextMenu(() => [
     ...(active ? [] : [{ label: 'Play', onSelect: onPlay }]),
-    { label: 'Show in Finder', onSelect: () => void window.flax.invoke('download:reveal', { id: d.id }) },
-    ...(active ? [] : [{ label: 'Open in default app', onSelect: () => void window.flax.invoke('download:open', { id: d.id }) }]),
+    { label: 'Show in Finder', onSelect: () => void window.matome.invoke('download:reveal', { id: d.id }) },
+    ...(active ? [] : [{ label: 'Open in default app', onSelect: () => void window.matome.invoke('download:open', { id: d.id }) }]),
     { label: active ? 'Cancel and delete' : 'Delete from this Mac…', danger: true, onSelect: onDelete },
   ])
   const sub = d.meta.kind === 'episode' ? `${ep(d.meta)} · ${d.meta.name}` : (d.meta.year ?? '')
@@ -25,7 +25,7 @@ function Tile({ d, onPlay, onDelete }: { d: DownloadInfo; onPlay: () => void; on
     <div className={s.tile} onContextMenu={onContextMenu}>
       {menu}
       <div className={s.poster} data-poster role="button" tabIndex={0} aria-label={active ? d.title : `Play ${d.title}`} onClick={() => !active && onPlay()} onKeyDown={(e) => e.key === 'Enter' && !active && onPlay()}>
-        {d.hasPoster ? <img src={`flax-local://poster/${d.id}`} alt="" loading="lazy" /> : <div className={s.fallback}>{d.meta.show ?? d.meta.name}</div>}
+        {d.hasPoster ? <img src={`matome-local://poster/${d.id}`} alt="" loading="lazy" /> : <div className={s.fallback}>{d.meta.show ?? d.meta.name}</div>}
         {!active && <div className={s.hover}><span className={s.play}><Icon name="play" size={20} fill /></span></div>}
         {active && d.total > 0 && <div className={s.bar}><i style={{ width: `${Math.min(100, (d.received / d.total) * 100)}%` }} /></div>}
         <button className={s.more} aria-label={`More for ${d.title}`} onClick={openMenu}><Icon name="more" size={16} fill /></button>
@@ -59,7 +59,7 @@ export function DownloadedView() {
     setPlay({ title: d.title, sources: [], startMs: 0, audio: [], subtitles: [], local: { id: d.id, positionMs: d.positionMs }, onNext: next ? () => start(next) : undefined })
   }
   const remove = (d: DownloadInfo) => {
-    if (window.confirm(`Delete "${d.title}" from this Mac?\n\nThe downloaded file is removed. Nothing changes on your servers.`)) void window.flax.invoke('download:remove', { id: d.id }).then(refresh)
+    if (window.confirm(`Delete "${d.title}" from this Mac?\n\nThe downloaded file is removed. Nothing changes on your servers.`)) void window.matome.invoke('download:remove', { id: d.id }).then(refresh)
   }
 
   return (

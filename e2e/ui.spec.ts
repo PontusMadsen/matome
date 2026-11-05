@@ -11,7 +11,7 @@ const settle = async (page: Page) => {
 test.beforeEach(async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
-  // flax-local:// / flax-stream:// only exist inside the Electron app; plain Chromium reports them as unknown schemes.
+  // matome-local:// / matome-stream:// only exist inside the Electron app; plain Chromium reports them as unknown schemes.
   page.on('console', (m) => m.type() === 'error' && !m.text().includes('ERR_UNKNOWN_URL_SCHEME') && errors.push(m.text()))
   await page.addInitScript(installMock)
   await page.goto('/index.html')
@@ -296,7 +296,7 @@ test('skin chooser: switches the look at once and keeps it', async ({ page }) =>
     await expect(page.getByRole('radio', { name: new RegExp(`^${name}`) })).toHaveAttribute('aria-checked', 'true')
   }
   await page.getByRole('radio', { name: /^Classic Mac/ }).click()
-  expect(await page.evaluate(() => localStorage.getItem('flax-skin'))).toBe('classicmac') // remembered so the next launch paints with it from the first frame
+  expect(await page.evaluate(() => localStorage.getItem('matome-skin'))).toBe('classicmac') // remembered so the next launch paints with it from the first frame
 })
 
 test('download: movie menu and title page offer it, progress shows in the tray and can be cancelled', async ({ page }) => {
@@ -329,14 +329,14 @@ test('Downloaded: lists what is saved, plays it from disk, goes on to the next e
   // movie: plays straight from the local file, no quality menu (nothing is transcoded)
   await page.getByRole('button', { name: 'Play Dune (2021)' }).click()
   await expect(page.locator('[data-player]')).toBeVisible()
-  await expect(page.locator('[data-player] video')).toHaveAttribute('src', 'flax-local://file/o1')
+  await expect(page.locator('[data-player] video')).toHaveAttribute('src', 'matome-local://file/o1')
   await expect(page.getByRole('combobox', { name: 'Quality' })).toHaveCount(0)
   await page.locator('[data-player]').getByRole('button', { name: 'Back', exact: true }).click()
   // episode: the next downloaded one follows
   await page.getByRole('button', { name: 'Play Slow Horses - S03E02 - Episode 2' }).click()
-  await expect(page.locator('[data-player] video')).toHaveAttribute('src', 'flax-local://file/o2')
+  await expect(page.locator('[data-player] video')).toHaveAttribute('src', 'matome-local://file/o2')
   await page.locator('[data-player] video').evaluate((v) => v.dispatchEvent(new Event('ended')))
-  await expect(page.locator('[data-player] video')).toHaveAttribute('src', 'flax-local://file/o3')
+  await expect(page.locator('[data-player] video')).toHaveAttribute('src', 'matome-local://file/o3')
   await page.locator('[data-player]').getByRole('button', { name: 'Back', exact: true }).click()
   // delete, after confirming
   page.once('dialog', (d) => { expect(d.message()).toContain('Dune (2021)'); void d.accept() })

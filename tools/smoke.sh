@@ -3,7 +3,7 @@
 # Used by CI so a build that crashes at startup is never published.
 APP="$(ls -d "$PWD"/release/mac-arm64/*.app | head -1)"
 EXE="$APP/Contents/MacOS/$(ls "$APP/Contents/MacOS" | head -1)"
-DATA="$HOME/Library/Application Support/Flax"
+DATA="$HOME/Library/Application Support/Matome"
 echo "app: $APP"
 rm -rf "$DATA"
 ELECTRON_ENABLE_LOGGING=1 "$EXE" --enable-logging=stderr > "${RUNNER_TEMP:-/tmp}/app.out" 2>&1 &

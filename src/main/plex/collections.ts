@@ -34,5 +34,5 @@ export async function fetchItemKeys(id: ClientIdentity, s: ServerInfo, token: st
 
 export async function fetchCollections(id: ClientIdentity, s: ServerInfo, token: string, sectionKey: string): Promise<RawCollection[]> {
   const r = await plexFetch<C>(id, s.baseUrl + sectionCollectionsPath(sectionKey), { token })
-  return (r.MediaContainer.Metadata ?? []).map((m) => ({ serverId: s.id, ratingKey: m.ratingKey, title: m.title, poster: m.thumb ? `flax-img://${s.id}${m.thumb}` : m.composite ? `flax-img://${s.id}${m.composite}` : undefined }))
+  return (r.MediaContainer.Metadata ?? []).map((m) => ({ serverId: s.id, ratingKey: m.ratingKey, title: m.title, poster: m.thumb ? `matome-img://${s.id}${m.thumb}` : m.composite ? `matome-img://${s.id}${m.composite}` : undefined }))
 }

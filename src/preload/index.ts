@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { FlaxApi } from '@shared/ipc'
+import type { MatomeApi } from '@shared/ipc'
 
-const api: FlaxApi = { invoke: (channel, req) => ipcRenderer.invoke(channel, req) }
-contextBridge.exposeInMainWorld('flax', api)
+const api: MatomeApi = { invoke: (channel, req) => ipcRenderer.invoke(channel, req) }
+contextBridge.exposeInMainWorld('matome', api)

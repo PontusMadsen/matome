@@ -38,7 +38,7 @@ test('file names are safe and carry the container', () => {
 })
 
 test('downloads a file to disk with progress, no .part left behind', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'flax-dl-'))
+  const dir = mkdtempSync(join(tmpdir(), 'matome-dl-'))
   const d = new Downloads()
   const id = d.start({ title: 'T', meta: M, url: `${base}/file`, headers: {}, dest: join(dir, 'T.mkv') })
   await waitFor(d, id, 'done')
@@ -48,7 +48,7 @@ test('downloads a file to disk with progress, no .part left behind', async () =>
 })
 
 test('a server that refuses says so in plain words', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'flax-dl-'))
+  const dir = mkdtempSync(join(tmpdir(), 'matome-dl-'))
   const d = new Downloads()
   const id = d.start({ title: 'T', meta: M, url: `${base}/forbidden`, headers: {}, dest: join(dir, 'T.mkv') })
   await waitFor(d, id, 'error')
@@ -57,7 +57,7 @@ test('a server that refuses says so in plain words', async () => {
 })
 
 test('cancelling stops an unfinished download and removes the partial file; clear drops finished entries', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'flax-dl-'))
+  const dir = mkdtempSync(join(tmpdir(), 'matome-dl-'))
   const d = new Downloads()
   const id = d.start({ title: 'T', meta: M, url: `${base}/slow`, headers: {}, dest: join(dir, 'T.mkv') })
   await new Promise((r) => setTimeout(r, 200))
@@ -70,7 +70,7 @@ test('cancelling stops an unfinished download and removes the partial file; clea
 })
 
 test('never overwrites: an existing name gets (2), (3)...; the folder is created on demand', () => {
-  const dir = join(mkdtempSync(join(tmpdir(), 'flax-dl-')), 'Fläx')
+  const dir = join(mkdtempSync(join(tmpdir(), 'matome-dl-')), 'Matome')
   const first = uniquePath(dir, 'Dune (2021).mkv')
   expect(first).toBe(join(dir, 'Dune (2021).mkv'))
   writeFileSync(first, 'x')
@@ -81,7 +81,7 @@ test('never overwrites: an existing name gets (2), (3)...; the folder is created
 })
 
 test('finished downloads are remembered across restarts; a file that vanished is forgotten; remove deletes the file', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'flax-dl-'))
+  const dir = mkdtempSync(join(tmpdir(), 'matome-dl-'))
   const index = join(dir, 'downloads.json')
   const d = new Downloads(index)
   const a = d.start({ title: 'A', meta: M, url: `${base}/file`, headers: {}, dest: join(dir, 'A.mkv') })
@@ -99,7 +99,7 @@ test('finished downloads are remembered across restarts; a file that vanished is
 })
 
 test('clear dismisses failures but keeps finished downloads in the library', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'flax-dl-'))
+  const dir = mkdtempSync(join(tmpdir(), 'matome-dl-'))
   const d = new Downloads(join(dir, 'downloads.json'))
   const ok = d.start({ title: 'ok', meta: M, url: `${base}/file`, headers: {}, dest: join(dir, 'ok.mkv') })
   const bad = d.start({ title: 'bad', meta: M, url: `${base}/forbidden`, headers: {}, dest: join(dir, 'bad.mkv') })

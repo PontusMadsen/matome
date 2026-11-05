@@ -49,9 +49,9 @@ export function toRawItem(s: ServerInfo, sec: Section, m: PlexMeta): RawItem {
     title: m.title,
     year: m.year,
     guids: parseGuids((m.Guid ?? []).map((g) => g.id)),
-    // Renderer never sees tokens: posters load via the flax-img:// protocol handled in main.
-    poster: m.thumb ? `flax-img://${s.id}${m.thumb}` : undefined,
-    art: m.art ? `flax-img://${s.id}${m.art}` : undefined,
+    // Renderer never sees tokens: posters load via the matome-img:// protocol handled in main.
+    poster: m.thumb ? `matome-img://${s.id}${m.thumb}` : undefined,
+    art: m.art ? `matome-img://${s.id}${m.art}` : undefined,
     summary: m.summary,
     addedAt: m.addedAt ?? 0,
     genres: (m.Genre ?? []).map((g) => g.tag),

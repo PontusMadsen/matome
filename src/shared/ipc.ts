@@ -48,7 +48,7 @@ export interface IpcChannels {
   'play:stop': { req: { serverId: string; session: string }; res: void }
   'subtitle:fetch': { req: { serverId: string; streamId: number; key?: string }; res: { text: string; via: string } }
   'library:list': { req: { type: MediaType }; res: MergedTitle[] }
-  /** downloads the original file from the first server that serves it into the app's own Downloads folder (~/Library/Application Support/Flax/Downloads) */
+  /** downloads the original file from the first server that serves it into the app's own Downloads folder (~/Library/Application Support/Matome/Downloads) */
   'download:start': { req: { title: string; year?: number; meta: DownloadMeta; poster?: string; sources: { serverId: string; ratingKey: string }[] }; res: { id: string } }
   /** per server: true = downloads allowed, false = refused, null = not known */
   'download:servers': { req: void; res: Record<string, boolean | null> }
@@ -65,12 +65,12 @@ export interface IpcChannels {
 
 export type IpcChannel = keyof IpcChannels
 
-export interface FlaxApi {
+export interface MatomeApi {
   invoke<C extends IpcChannel>(channel: C, req: IpcChannels[C]['req']): Promise<IpcChannels[C]['res']>
 }
 
 declare global {
   interface Window {
-    flax: FlaxApi
+    matome: MatomeApi
   }
 }

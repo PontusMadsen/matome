@@ -48,7 +48,7 @@ export class MpvSession {
   private client = new MpvClient()
 
   async start(bin: string, prefs: MpvPrefs, p: MpvPlay): Promise<void> {
-    const sock = join(tmpdir(), `flax-mpv-${process.pid}-${Date.now()}.sock`)
+    const sock = join(tmpdir(), `matome-mpv-${process.pid}-${Date.now()}.sock`)
     this.proc = spawn(bin, mpvArgs(sock, prefs), { stdio: 'ignore' })
     this.proc.once('exit', () => this.client.close())
     await this.client.connect(sock)

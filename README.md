@@ -1,23 +1,23 @@
-<p align="center"><img src="brand/svg/flax-horizontal-color.svg" alt="Fläx" width="220"></p>
-
-# Fläx
+# Matome
 
 A Mac app for Plex that puts **every movie and show from every server your account can reach into one view**. The same title on three servers is one card. It also has search, watchlist, continue watching, playback with subtitles and quality control, and it updates itself.
 
-Fläx is an independent project and is not affiliated with or endorsed by Plex, Inc. It only talks to your own Plex account and the servers you already have access to.
+Matome is an independent project and is not affiliated with or endorsed by Plex, Inc. It only talks to your own Plex account and the servers you already have access to.
 
 ## Install
-1. Download `Flax-<version>-arm64.dmg` (Apple Silicon) or `Flax-<version>-x64.dmg` (Intel) from the [latest release](../../releases/latest).
-2. Drag Fläx to Applications and open it. Sign in with your Plex account.
+1. Download `Matome-<version>-arm64.dmg` (Apple Silicon) or `Matome-<version>-x64.dmg` (Intel) from the [latest release](../../releases/latest).
+2. Drag Matome to Applications and open it. Sign in with your Plex account.
 
-Fläx checks for new releases at launch and every 30 minutes, verifies the download (SHA-256, plus the code signature on signed builds), and shows **Restart to update** in Settings → Updates.
+Matome checks for new releases at launch and every 30 minutes, verifies the download (SHA-256, plus the code signature on signed builds), and shows **Restart to update** in Settings → Updates.
 
 macOS only, by design.
 
+**Coming from Fläx/Flax?** Matome is the same app under a new name. It can't update an old Fläx install by itself: install Matome from the release page once and sign in to Plex again. Your settings, window position and downloaded files are carried over automatically; the old `Flax` folder is left where it is and can be deleted. The `brand/` folder still holds the original Fläx-era logo kit until the new logo is ready.
+
 ## Privacy
 - Your Plex token is stored in the macOS keychain (Electron `safeStorage`) and never leaves the main process; the UI never sees it.
-- Fläx contacts plex.tv, your Plex servers, and api.github.com (update checks). No analytics, no telemetry.
-- Logs stay on your machine (`~/Library/Application Support/Flax/flax.log`).
+- Matome contacts plex.tv, your Plex servers, and api.github.com (update checks). No analytics, no telemetry.
+- Logs stay on your machine (`~/Library/Application Support/Matome/matome.log`).
 
 ## Develop
 Needs Node 22+ and pnpm.
@@ -35,4 +35,4 @@ Layout: `src/main/plex/` all Plex network code; `src/main/merge/` pure merge log
 Releases: see [docs/RELEASING.md](docs/RELEASING.md).
 
 ## License
-Code: MIT. The Fläx name and logo are not under that license; see [brand/GUIDELINES.md](brand/GUIDELINES.md).
+Code: MIT. The Matome name and logo are not under that license; see [brand/GUIDELINES.md](brand/GUIDELINES.md).

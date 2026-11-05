@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test'
 
-// UI regression tests: the built renderer is served statically and `window.flax` is mocked (e2e/mock-bridge.ts),
+// UI regression tests: the built renderer is served statically and `window.matome` is mocked (e2e/mock-bridge.ts),
 // so no Plex account, Electron or network is needed. `e2e/smoke.spec.ts` (real Electron) is run manually on a Mac.
 export default defineConfig({
   testDir: 'e2e',

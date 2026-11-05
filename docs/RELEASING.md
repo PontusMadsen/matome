@@ -1,11 +1,11 @@
-# Releasing Fläx
+# Releasing Matome
 
 Releases are built by `.github/workflows/release.yml` on a GitHub macOS runner. You never need a terminal.
 
 ## Publish a version
 1. Bump `version` in `package.json` (e.g. `1.0.1`) and merge it to `main`.
 2. Start the release: GitHub -> Actions -> release -> Run workflow, tag `v1.0.1` (it creates the tag on `main` itself). Or push a tag with the same number: `git tag v1.0.1 && git push origin v1.0.1`. (Or in GitHub: Releases -> Draft a new release -> create the tag `v1.0.1` on `main` and publish; the tag push starts the same build.)
-3. The workflow builds arm64 + x64, signs and notarizes, starts the app once as a smoke test, then creates the GitHub Release (if it doesn't exist yet) and attaches `Flax-<version>-<arch>.dmg/.zip` and `SHA256SUMS.txt` (about 10 minutes). A build whose app doesn't start is never published.
+3. The workflow builds arm64 + x64, signs and notarizes, starts the app once as a smoke test, then creates the GitHub Release (if it doesn't exist yet) and attaches `Matome-<version>-<arch>.dmg/.zip` and `SHA256SUMS.txt` (about 10 minutes). A build whose app doesn't start is never published.
 4. Installed apps pick it up within 30 minutes. Pre-releases and drafts are ignored by the updater.
 
 If the build fails, fix it and run the workflow manually (Actions -> release -> Run workflow -> enter the tag). Files are replaced.
@@ -26,4 +26,4 @@ Getting the .p12: Xcode → Settings → Accounts → Manage Certificates → + 
 The updater requires an update to carry the same Team ID as the installed app, so keep using the same certificate.
 
 ## Bundle id
-`build.appId` in `package.json` (`app.flax.mac`) identifies the app to macOS (keychain, preferences). Choose it before the first public release; changing it later makes users re-sign-in.
+`build.appId` in `package.json` (`app.matome.mac`) identifies the app to macOS (keychain, preferences). Choose it before the first public release; changing it later makes users re-sign-in.

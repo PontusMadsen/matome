@@ -20,13 +20,13 @@ export function compareVersions(a: string, b: string): number {
 
 export const isNewer = (current: string, latest: string): boolean => compareVersions(current, latest) < 0
 
-/** Release assets are published as `Flax-<version>-<arch>.zip`; GitHub exposes `digest: sha256:<hex>` per asset. */
+/** Release assets are published as `Matome-<version>-<arch>.zip`; GitHub exposes `digest: sha256:<hex>` per asset. */
 export function parseRelease(r: Release, arch: string): UpdateInfo | null {
   if (r.draft || r.prerelease || !r.tag_name) return null
   const v = parseVersion(r.tag_name)
   if (!v) return null
   const version = v.join('.')
-  const name = `Flax-${version}-${arch}.zip`
+  const name = `Matome-${version}-${arch}.zip`
   const asset = r.assets?.find((a) => a.name === name)
   if (!asset) return null
   const sha256 = /^sha256:([0-9a-f]{64})$/i.exec(asset.digest ?? '')?.[1]?.toLowerCase() ?? null

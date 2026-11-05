@@ -5,7 +5,7 @@ export const SKINS: { id: SkinId; name: string; blurb: string; swatch: [string, 
   { id: 'classicmac', name: 'Classic Mac', blurb: '1984: black, white and dithered shadows.', swatch: ['#FFFFFF', '#000000', '#8A8A8A'] },
 ]
 
-const KEY = 'flax-skin'
+const KEY = 'matome-skin'
 
 /** Sets the skin on <html>; remembered locally so the next launch paints with it from the first frame. */
 export function applySkin(id: string | undefined): void {
@@ -17,7 +17,7 @@ export function applySkin(id: string | undefined): void {
 
 export function applyRememberedSkin(): void {
   try {
-    const k = localStorage.getItem(KEY)
+    const k = localStorage.getItem(KEY) ?? localStorage.getItem('flax-skin') // the key used before the rename
     document.documentElement.dataset.skin = k === 'macos' ? 'classicmac' : (k ?? 'default')
   } catch { /* default look */ }
 }

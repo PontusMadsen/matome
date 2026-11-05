@@ -11,8 +11,8 @@ test('only public https hosts are fetched for posters', () => {
   expect(isAllowedImageUrl(new URL('https://[::1]/a.jpg'))).toBe(false)
 })
 test('poster urls: absolute ones go through the remote proxy, Discover-relative through the account', () => {
-  expect(posterUrl('https://image.tmdb.org/a.jpg')).toBe('flax-img://remote/https%3A%2F%2Fimage.tmdb.org%2Fa.jpg')
-  expect(posterUrl('/library/metadata/5d/thumb/1?x=1')).toBe('flax-img://discover/library/metadata/5d/thumb/1?x=1')
+  expect(posterUrl('https://image.tmdb.org/a.jpg')).toBe('matome-img://remote/https%3A%2F%2Fimage.tmdb.org%2Fa.jpg')
+  expect(posterUrl('/library/metadata/5d/thumb/1?x=1')).toBe('matome-img://discover/library/metadata/5d/thumb/1?x=1')
   expect(posterUrl(undefined)).toBeUndefined()
   expect(posterUrl('nonsense')).toBeUndefined()
 })

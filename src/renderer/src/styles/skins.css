@@ -22,7 +22,7 @@ img[data-logo='dark-on-light'] { display: none; }
 [data-skin='classicmac'] body { background: #fff; }
 [data-skin='classicmac'] [data-ui='sidebar'] { position: relative; background-color: #fff; background-image: radial-gradient(#000 0.6px, transparent 0.75px); background-size: 4px 4px; border-right: 1px solid #000; }
 [data-skin='classicmac'] [data-ui='sidebar']::after { content: ''; position: absolute; top: 3px; bottom: 0; right: -5px; width: 4px; background: var(--dither); z-index: 3; pointer-events: none; }
-[data-skin='classicmac'] [data-ui='sidebar'] img[data-logo='dark-on-light'] { background: #fff; padding: 6px 8px; border: 1px solid #000; width: 140px; box-shadow: 2px 2px 0 #000; }
+[data-skin='classicmac'] [data-ui='logo'] { background: #fff; padding: 6px 10px; border: 1px solid #000; box-shadow: 2px 2px 0 #000; }
 [data-skin='classicmac'] img[data-logo='light-on-dark'] { display: none; }
 [data-skin='classicmac'] img[data-logo='dark-on-light'] { display: block; }
 [data-skin='classicmac'] [data-ui='nav'] { background: #fff; border: 1px solid #000; border-radius: 0; color: #000; font-weight: 400; }

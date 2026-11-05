@@ -96,7 +96,7 @@ export async function fetchEpisodes(id: ClientIdentity, s: ServerInfo, token: st
     episode: c.index ?? 0,
     title: c.title,
     summary: c.summary,
-    thumb: c.thumb ? `flax-img://${s.id}${c.thumb}` : undefined,
+    thumb: c.thumb ? `matome-img://${s.id}${c.thumb}` : undefined,
     durationMs: c.duration,
     watched: (c.viewCount ?? 0) > 0,
     viewOffsetMs: c.viewOffset ?? 0,

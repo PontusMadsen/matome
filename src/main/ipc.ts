@@ -74,16 +74,16 @@ export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
   for (const channel of Object.keys(handlers) as IpcChannel[]) {
     ipc.handle(channel, (_e, req) => (handlers[channel] as (r: unknown) => unknown)(req))
   }
-  protocol.handle('flax-stream', (request) => {
+  protocol.handle('matome-stream', (request) => {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'GET, OPTIONS' } })
     }
     const u = new URL(request.url)
     return svc.stream(u.hostname, u.pathname + u.search, request.headers.get('range'))
   })
-  /** Save the image behind one of our flax-img URLs to `dest` (best effort; offline playback shows it as the cover). */
+  /** Save the image behind one of our matome-img URLs to `dest` (best effort; offline playback shows it as the cover). */
   const saveHere = async (url: string | undefined, dest: string): Promise<boolean> => {
-    if (!url?.startsWith('flax-img://')) return false
+    if (!url?.startsWith('matome-img://')) return false
     try {
       const u = new URL(url)
       const img =
@@ -95,8 +95,8 @@ export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
       return true
     } catch { return false }
   }
-  // flax-local://file/<id> (video, with Range) and flax-local://poster/<id>: files from the Downloaded section
-  protocol.handle('flax-local', (request) => {
+  // matome-local://file/<id> (video, with Range) and matome-local://poster/<id>: files from the Downloaded section
+  protocol.handle('matome-local', (request) => {
     const u = new URL(request.url)
     const id = u.pathname.slice(1)
     const path = downloads.pathOf(id)
@@ -115,8 +115,8 @@ export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
     const body = size === 0 ? null : (Readable.toWeb(createReadStream(path, span)) as unknown as ReadableStream)
     return new Response(body, { status: range ? 206 : 200, headers: { ...base, 'content-length': String(size === 0 ? 0 : span.end - span.start + 1), ...(range ? { 'content-range': `bytes ${span.start}-${span.end}/${size}` } : {}) } })
   })
-  // flax-img://<serverId>/<plex path> -> authenticated fetch in main
-  protocol.handle('flax-img', async (request) => {
+  // matome-img://<serverId>/<plex path> -> authenticated fetch in main
+  protocol.handle('matome-img', async (request) => {
     const u = new URL(request.url)
     const img =
       u.hostname === 'remote' ? await fetchRemoteImage(decodeURIComponent(u.pathname.slice(1))).catch(() => null)
