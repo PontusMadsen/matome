@@ -34,12 +34,13 @@ export function installMock(): void {
   const eps = [1, 2, 3, 4].map((n) => ({ season: 3, episode: n, title: `Episode ${n}`, summary: 'A summary.', durationMs: 3_000_000, airDate: n === 1 ? '2024-03-14' : n === 2 ? new Date(Date.now() - 3 * 86_400_000).toISOString().slice(0, 10) : n === 3 ? new Date(Date.now() + 5 * 86_400_000).toISOString().slice(0, 10) : undefined, watched: n < 2, viewOffsetMs: 0, sources: [{ serverId: 'a', serverName: 'Home server', ratingKey: '9', online: true, connectionPref: 1 }] }))
   const calls: { c: string; r: unknown }[] = []
   const handlers: Record<string, (r: any) => unknown> = {
-    'auth:state': () => ({ signedIn: true }),
-    'servers:list': () => [
+    'auth:state': () => ({ signedIn: !(window as any).__signedOut, pending: !!(window as any).__pending, error: (window as any).__authError }),
+    'auth:start': () => { (window as any).__pending = true; return { authUrl: 'https://app.plex.tv/auth' } },
+    'servers:list': () => ((window as any).__noServers ? [] : [
       { id: 'a', name: 'Home server', owned: false, online: true, latencyMs: 142, connectionPref: 1 },
       { id: 'b', name: 'Friend A', owned: false, online: true, latencyMs: 380, connectionPref: 2 },
       { id: 'c', name: 'Offline', owned: false, online: false, latencyMs: null, connectionPref: 1 },
-    ],
+    ]),
     'library:list': (r) => (r.type === 'movie' ? movies : shows),
     'home:continue': async () => { if ((window as any).__slow) await new Promise((r) => setTimeout(r, 900)); return cont },
     'home:continue:refresh': async () => { if ((window as any).__slow) await new Promise((r) => setTimeout(r, 900)); return handlers['home:continue']!(undefined) },
