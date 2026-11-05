@@ -1,5 +1,5 @@
 {
-  "name": "Fl\u00e4x",
+  "name": "Matome",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -18,7 +18,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#0B8F86",
-  "background_color": "#0B8F86",
+  "theme_color": "#0E1116",
+  "background_color": "#0E1116",
   "display": "standalone"
 }

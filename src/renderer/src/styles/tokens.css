@@ -12,7 +12,7 @@
   --text-dim: #A0A9B6;   /* 7.6:1 on --bg */
   --text-faint: #7B8594; /* 4.9:1 on --bg */
 
-  --accent: #2DD4BF; /* Flax Teal Light: symbol/accents on dark only */
+  --accent: #2DD4BF; /* Matome Teal Light: symbol/accents on dark only */
   --accent-hover: #5EE6D3;
   --accent-ink: #0E1116; /* Ink on Teal Light 10.2:1 */
   --accent-soft: rgba(45, 212, 191, 0.14);

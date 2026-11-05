@@ -1,4 +1,4 @@
-# Matome
+<p align="center"><img src="brand/lockup/matome-lockup-horizontal-teal.svg" alt="Matome" width="320"></p>
 
 A Mac app for Plex that puts **every movie and show from every server your account can reach into one view**. The same title on three servers is one card. It also has search, watchlist, continue watching, playback with subtitles and quality control, and it updates itself.
 
@@ -12,7 +12,7 @@ Matome checks for new releases at launch and every 30 minutes, verifies the down
 
 macOS only, by design.
 
-**Coming from Fläx/Flax?** Matome is the same app under a new name. It can't update an old Fläx install by itself: install Matome from the release page once and sign in to Plex again. Your settings, window position and downloaded files are carried over automatically; the old `Flax` folder is left where it is and can be deleted. The `brand/` folder still holds the original Fläx-era logo kit until the new logo is ready.
+**Coming from Fläx/Flax?** Matome is the same app under a new name. It can't update an old Fläx install by itself: install Matome from the release page once and sign in to Plex again. Your settings, window position and downloaded files are carried over automatically; the old `Flax` folder is left where it is and can be deleted. The logo kit and its usage rules live in [`brand/`](brand/GUIDELINES.md).
 
 ## Privacy
 - Your Plex token is stored in the macOS keychain (Electron `safeStorage`) and never leaves the main process; the UI never sees it.

@@ -1,3 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"><title>Fläx symbol</title><g transform="translate(-39.3 -39.3) scale(1.307)">
-<rect x="48" y="34" width="80" height="28" rx="14"/><rect x="88" y="74" width="80" height="28" rx="14"/><rect x="48" y="114" width="160" height="28" rx="14"/><rect x="88" y="154" width="80" height="28" rx="14"/><rect x="48" y="194" width="80" height="28" rx="14"/>
-</g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"><title>Matome</title><g transform="translate(5.12 5.12) scale(0.96)" fill="#0B8F86"><path d="M32 0H112Q128 0 128 16V48A80 80 0 0 0 208 128H240Q256 128 256 144V160A16 16 0 0 1 240 176H16A16 16 0 0 1 0 160V32A32 32 0 0 1 32 0Z"/><circle cx="208" cy="48" r="48"/><rect x="0" y="208" width="256" height="48" rx="24"/></g></svg>
