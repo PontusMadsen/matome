@@ -179,7 +179,7 @@ export function App() {
             {upd.data.state === 'ready' ? (
               <>
                 <span>A new version of Matome is ready.</span>
-                <button className="btn btn-primary" onClick={() => void window.matome.invoke('update:apply', undefined)}>Restart to update</button>
+                <button className="btn btn-primary" onClick={() => void window.matome.invoke('update:apply', undefined).then((r) => { if (!r.ok) window.alert(r.reason ?? 'Could not restart.') })}>Restart to update</button>
               </>
             ) : (
               <span>Downloading update…</span>

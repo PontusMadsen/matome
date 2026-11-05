@@ -41,7 +41,8 @@ export interface IpcChannels {
   'title:refresh': { req: { id: string }; res: void }
   'update:status': { req: void; res: UpdateStatus }
   'update:check': { req: void; res: UpdateStatus }
-  'update:apply': { req: void; res: void }
+  /** ok:false = it did not restart, with the reason to show */
+  'update:apply': { req: void; res: { ok: boolean; reason?: string } }
   'play:streams': { req: { serverId: string; ratingKey: string }; res: PlayableStreams }
   'app:log': { req: { msg: string }; res: void }
   'episode:setWatched': { req: { titleId: string; sources: { serverId: string; ratingKey: string }[]; watched: boolean }; res: void }

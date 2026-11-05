@@ -16,6 +16,7 @@ function ago(ms?: number): string {
 function Updates() {
   const qc = useQueryClient()
   const [busy, setBusy] = useState(false)
+  const [applyErr, setApplyErr] = useState('')
   const { data } = useQuery({
     queryKey: ['update'],
     queryFn: () => window.matome.invoke('update:status', undefined),
@@ -44,7 +45,7 @@ function Updates() {
           <div className={s.row}>
             <div className={s.grow}>
               <div className={s.label}>Version <span className={s.mono}>{data.current}</span>{data.latest && data.latest !== data.current ? <span className={s.hint}> · latest {data.latest}</span> : null}</div>
-              <div className={`${s.hint} ${data.state === 'error' ? s.err : ''}`}>{status}</div>
+              <div className={`${s.hint} ${data.state === 'error' || applyErr ? s.err : ''}`} role={applyErr ? 'alert' : undefined}>{applyErr || status}</div>
               {data.state === 'downloading' && (
                 <div style={{ height: 4, borderRadius: 2, background: 'var(--s3)', marginTop: 8, overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${Math.round((data.progress ?? 0) * 100)}%`, background: 'var(--accent)', transition: 'width 300ms' }} />
@@ -52,7 +53,7 @@ function Updates() {
               )}
             </div>
             {data.state === 'ready' ? (
-              <button className="btn btn-primary" onClick={() => void window.matome.invoke('update:apply', undefined)}>Restart to update</button>
+              <button className="btn btn-primary" onClick={() => void window.matome.invoke('update:apply', undefined).then((r) => setApplyErr(r.ok ? '' : (r.reason ?? 'Could not restart.')))}>Restart to update</button>
             ) : (
               <button className="btn" disabled={working} onClick={check}><Icon name="refresh" size={15} /> {working ? 'Working…' : 'Check now'}</button>
             )}

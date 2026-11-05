@@ -1,12 +1,13 @@
 import { app } from 'electron'
 import { spawn, execFile } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { createWriteStream, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync, chmodSync } from 'node:fs'
-import { join } from 'node:path'
+import { accessSync, constants, createWriteStream, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync, chmodSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { promisify } from 'node:util'
-import { bundlePath, isNewer, parseRelease, parseSums, swapScript, teamIdOf, type Release } from './update-logic'
+import { bundlePath, isNewer, parseRelease, parseSums, swapBlocker, swapScript, teamIdOf, type Release } from './update-logic'
+import { log } from './log'
 import type { UpdateStatus } from '@shared/types'
 
 const run = promisify(execFile)
@@ -130,16 +131,31 @@ export class Updater {
     if ((await info(bundle)) !== mine) throw new Error('update is signed by a different developer; discarded')
   }
 
-  /** Quit, swap the bundle in place, relaunch. */
-  apply(): void {
+  /** Quit, swap the bundle in place, relaunch. Says why in plain words when it cannot (and logs it). */
+  apply(): { ok: boolean; reason?: string } {
+    const fail = (reason: string) => { log(`update: cannot apply: ${reason}`); return { ok: false, reason } }
     const bundle = bundlePath(process.execPath)
-    if (this.status.state !== 'ready' || !this.newBundle || !bundle || !existsSync(this.newBundle)) return
+    if (this.status.state !== 'ready') return fail('No update is ready yet. Press "Check now".')
+    if (!bundle) return fail('This is not an installed app (a development build), so it cannot update itself.')
+    if (!this.newBundle || !existsSync(this.newBundle)) {
+      this.set({ state: 'idle' })
+      return fail('The downloaded update is missing. Press "Check now" to fetch it again.')
+    }
+    const blocked = swapBlocker(bundle)
+    if (blocked) return fail(blocked)
+    try {
+      accessSync(dirname(bundle), constants.W_OK)
+    } catch {
+      return fail(`Matome cannot write to ${dirname(bundle)}, so it cannot replace itself. Move Matome to the Applications folder (or fix that folder's permissions) and try again.`)
+    }
     const dir = join(app.getPath('userData'), 'update')
     const script = join(dir, 'swap.sh')
     writeFileSync(script, swapScript({ pid: process.pid, bundle, newBundle: this.newBundle, log: join(app.getPath('home'), 'Library/Logs/Matome-update.log') }))
     chmodSync(script, 0o755)
+    log(`update: restarting to install ${this.status.latest ?? '?'} into ${bundle}`)
     spawn('/bin/bash', [script], { detached: true, stdio: 'ignore' }).unref()
     if (this.timer) clearInterval(this.timer)
     app.quit()
+    return { ok: true }
   }
 }
