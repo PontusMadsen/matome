@@ -415,6 +415,37 @@ test('episodes show when they aired, with a tag for new and for not-yet-aired on
   await expect(rows.nth(3)).not.toContainText('Upcoming') // no date known: nothing shown
 })
 
+test('first launch: signed out shows a welcome screen with one clear button, and no app behind it', async ({ page }) => {
+  await page.addInitScript(() => { (window as any).__signedOut = true })
+  await page.reload()
+  await expect(page.getByRole('heading', { name: /All your Plex libraries/ })).toBeVisible()
+  await expect(page.locator('nav')).toHaveCount(0)
+  const button = page.getByRole('button', { name: 'Sign in with Plex' })
+  await button.click()
+  const calls = await page.evaluate(() => (window as any).__calls.filter((c: any) => c.c === 'auth:start').length)
+  expect(calls).toBe(1)
+  // while the browser approval is pending, say what to do and offer to open it again
+  await expect(page.getByRole('status')).toContainText('Approve Matome')
+  await expect(page.getByRole('button', { name: 'Waiting for you…' })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Open it again' })).toBeVisible()
+})
+
+test('first launch: a failed sign-in says why and offers another try', async ({ page }) => {
+  await page.addInitScript(() => { (window as any).__signedOut = true; (window as any).__authError = 'Sign-in code expired. Try again.' })
+  await page.reload()
+  await expect(page.getByRole('alert')).toContainText('Sign-in code expired')
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
+})
+
+test('signed in without any server: explains, and offers to look again or switch account', async ({ page }) => {
+  await page.addInitScript(() => { (window as any).__noServers = true })
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Looking for your servers…' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'No Plex servers found on this account' })).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByRole('button', { name: 'Look again' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Use another account' })).toBeVisible()
+})
+
 test('Continue Watching shows 1, 2 or 3 big cards depending on the width, and the rest as a shelf', async ({ page }) => {
   const heroes = page.getByTestId('continue-hero')
   for (const [width, expected] of [[820, 1], [1360, 2], [1920, 3]] as const) {

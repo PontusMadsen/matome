@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSwipeBack } from './components/useSwipeBack'
 import { flushSync } from 'react-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { MergedTitle } from '@shared/types'
 import s from './App.module.css'
 import { Icon, type IconName } from './components/Icon'
 import { Logo } from './components/Logo'
 import { applySkin } from './skins'
-import { useDownloads, useServers } from './api'
+import { useAuth, useDownloads, useServers } from './api'
 import { Detail, type AutoPlay } from './views/Detail'
 import { Home } from './views/Home'
 import { LibraryView } from './views/LibraryView'
@@ -17,6 +17,8 @@ import { Watchlist } from './views/Watchlist'
 import { Collections } from './views/Collections'
 import { ServerView } from './views/ServerView'
 import { DownloadedView } from './views/DownloadedView'
+import { Welcome } from './views/Welcome'
+import { NoServers } from './views/NoServers'
 import { CommandPalette } from './components/CommandPalette'
 import { DownloadsTray } from './components/DownloadsTray'
 
@@ -50,6 +52,12 @@ export function App() {
   const [auto, setAuto] = useState<AutoPlay | undefined>()
   const upd = useQuery({ queryKey: ['update'], queryFn: () => window.matome.invoke('update:status', undefined), refetchInterval: 5000 })
   const servers = useServers()
+  const auth = useAuth()
+  const qc = useQueryClient()
+  const signedIn = auth.data?.signedIn
+  // The moment a sign-in completes, everything fetched while signed out is stale.
+  const wasSignedIn = useRef(false)
+  useEffect(() => { if (signedIn && !wasSignedIn.current) void qc.invalidateQueries(); wasSignedIn.current = !!signedIn }, [signedIn, qc])
   const [palette, setPalette] = useState(false)
   const prefs = useQuery({ queryKey: ['settings'], queryFn: () => window.matome.invoke('settings:get', undefined) })
   useEffect(() => { if (prefs.data) applySkin(prefs.data.skin) }, [prefs.data])
@@ -135,6 +143,9 @@ export function App() {
   const hasDownloads = (useDownloads().data ?? []).some((d) => d.state === 'done' || d.state === 'active')
   const nav = NAV.filter((n) => n.v !== 'Downloaded' || hasDownloads || view === 'Downloaded')
   const idx = nav.findIndex((n) => n.v === view)
+  if (!auth.data) return <div style={{ height: '100vh', background: 'var(--bg)' }} />
+  if (!auth.data.signedIn) return <Welcome />
+  const noServers = servers.data !== undefined && servers.data.length === 0 && ['Home', 'Movies', 'TV Shows', 'Collections', 'Downloaded'].includes(view) && view !== 'Downloaded'
   return (
     <div className={s.shell}>
       <div className={s.drag} />
@@ -180,10 +191,11 @@ export function App() {
             <h1 className="t-title">{view === 'Server' ? (servers.data?.find((x) => x.id === srv)?.name ?? 'Server') : view}</h1>
           </header>
           <div className={s.content}>
-            {view === 'Home' && <Home onOpen={openTitle} />}
-            {view === 'Movies' && <LibraryView type="movie" onOpen={openTitle} />}
-            {view === 'TV Shows' && <LibraryView type="show" onOpen={openTitle} />}
-            {view === 'Collections' && <Collections onOpen={openTitle} />}
+            {noServers && <NoServers />}
+            {!noServers && view === 'Home' && <Home onOpen={openTitle} />}
+            {!noServers && view === 'Movies' && <LibraryView type="movie" onOpen={openTitle} />}
+            {!noServers && view === 'TV Shows' && <LibraryView type="show" onOpen={openTitle} />}
+            {!noServers && view === 'Collections' && <Collections onOpen={openTitle} />}
             {view === 'Watchlist' && <Watchlist onOpen={openTitle} />}
             {view === 'Downloaded' && <DownloadedView />}
             {view === 'Search' && <Search onOpen={openTitle} />}
