@@ -363,7 +363,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
         if (subId) changeTrack('sub', undefined) // stop burning a previous server-side choice
         return
       } catch (e) {
-        void window.matome.invoke('app:log', { msg: `client-side subtitles failed (${e instanceof Error ? e.message : String(e)}); using the server` })
+        void window.matome.invoke('app:log', { msg: `client-side subtitles failed for ${t.codec ?? '?'}/${t.format ?? '?'} (${e instanceof Error ? e.message : String(e)}); using the server` })
         setNote('Showing subtitles through the server instead…')
       }
     }

@@ -22,8 +22,9 @@ export function transcodeStartPath(ratingKey: string, o: TranscodeOpts): string 
     session: o.session,
     directPlay: '0',
     // With a bitrate cap the server transcodes anyway; asking for a full transcode avoids copying audio
-    // (DTS/E-AC3/TrueHD) that a browser can't decode. Uncapped streams may direct-stream.
-    directStream: o.maxBitrateKbps || o.fullTranscode ? '0' : '1',
+    // (DTS/E-AC3/TrueHD) that a browser can't decode. Burned-in subtitles need the video re-encoded too, or the server
+    // may copy the video untouched and silently skip them. Uncapped streams without either may direct-stream.
+    directStream: o.maxBitrateKbps || o.fullTranscode || o.subtitles === 'burn' ? '0' : '1',
     fastSeek: '1',
     'X-Plex-Session-Identifier': o.session,
   })
@@ -31,7 +32,7 @@ export function transcodeStartPath(ratingKey: string, o: TranscodeOpts): string 
   if (o.maxBitrateKbps) q.set('maxVideoBitrate', String(o.maxBitrateKbps))
   if (o.compat) {
     for (const k of ['subtitles', 'fastSeek', 'X-Plex-Session-Identifier']) q.delete(k)
-    q.set('directStream', o.fullTranscode ? '0' : '1')
+    q.set('directStream', o.fullTranscode ? '0' : '1') // compat drops the subtitles parameter, so nothing is burned
   }
   return `/video/:/transcode/universal/start.m3u8?${q}`
 }

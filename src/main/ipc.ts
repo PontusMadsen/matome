@@ -63,6 +63,7 @@ export function registerIpc(ipc: IpcMain, svc: Service, upd: Updater): void {
     'download:open': async ({ id }) => { const p = downloads.pathOf(id); if (p) await shell.openPath(p) },
     'download:position': ({ id, ms }) => downloads.setPosition(id, ms),
     'download:reveal': ({ id }) => { const p = downloads.pathOf(id); if (p) shell.showItemInFolder(p) },
+    'app:reveal-log': () => { shell.showItemInFolder(join(app.getPath('userData'), 'matome.log')) },
     'app:log': ({ msg }) => log(`renderer: ${scrub(msg)}`),
     'episode:setWatched': (r) => svc.setEpisodeWatched(r.titleId, r.sources, r.watched),
     'play:stop': ({ serverId, session }) => svc.stopSession(serverId, session),
