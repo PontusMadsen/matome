@@ -565,7 +565,7 @@ export class Service {
     }
     // Off is already stored on the server (subtitleStreamID=0), so 'auto' is enough and avoids an unverified value.
     const subtitles = r.subtitleMode ?? (r.subtitleStreamId ? 'burn' : 'auto')
-    const path = transcodeStartPath(r.ratingKey, { offsetMs: r.offsetMs, session, subtitles, compat: r.compat, maxBitrateKbps: (r.maxBitrateKbps ?? this.settings.maxBitrateKbps) || undefined })
+    const path = transcodeStartPath(r.ratingKey, { offsetMs: r.offsetMs, session, subtitles, compat: r.compat, fullTranscode: r.fullTranscode, maxBitrateKbps: (r.maxBitrateKbps ?? this.settings.maxBitrateKbps) || undefined })
     return { url: `matome-stream://${r.serverId}${path}`, session }
   }
 

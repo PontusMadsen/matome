@@ -68,3 +68,9 @@ test('compat mode sends only the minimal parameters', () => {
 test('stop path', () => {
   expect(stopSessionPath('a b')).toBe('/video/:/transcode/universal/stop?session=a%20b')
 })
+
+test('fullTranscode re-encodes even without a bitrate cap, also in compat mode', () => {
+  const q = (compat: boolean) => new URLSearchParams(transcodeStartPath('42', { offsetMs: 0, session: 's', fullTranscode: true, compat }).split('?')[1])
+  expect(q(false).get('directStream')).toBe('0')
+  expect(q(true).get('directStream')).toBe('0')
+})

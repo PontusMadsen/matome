@@ -59,6 +59,9 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
   const lineRef = useRef(80)
   /** Last resort when the server rejects the full request with a bare 400: minimal parameters. */
   const [compat, setCompat] = useState(false)
+  /** The browser could not decode the passed-through streams (mediaError): ask the server to re-encode. */
+  const [fullTranscode, setFullTranscode] = useState(false)
+  const mediaRecovered = useRef(false)
   /** Resolves once the previous transcode session has been stopped on the server (shared servers often allow only one at a time). */
   const stopPending = useRef<Promise<unknown>>(Promise.resolve())
   /** One transcode session id for this whole playback (see PlayRequest.session). */
@@ -177,7 +180,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
       }
     }
     el.textTracks.addEventListener('addtrack', quiet)
-    const onPlaying = () => { base.current = detectBase(offset, el.currentTime); busyRetries.current = 0; deadRetries.current = 0; applyCuesRef.current(); quiet() }
+    const onPlaying = () => { base.current = detectBase(offset, el.currentTime); busyRetries.current = 0; deadRetries.current = 0; mediaRecovered.current = false; applyCuesRef.current(); quiet() }
     el.addEventListener('playing', onPlaying, { once: true })
     setWaiting(true)
     if (liveServer.current && liveServer.current !== src.serverId) {
@@ -186,7 +189,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
     }
     liveServer.current = src.serverId
     void stopPending.current
-      .then(() => (cancelled ? Promise.reject(new Error('cancelled')) : window.matome.invoke('play:start', { serverId: src.serverId, ratingKey: src.ratingKey, offsetMs: offset, partId, audioStreamId: audioId, subtitleStreamId: subId, subtitleMode: subMode, compat, session: sessionId.current, maxBitrateKbps: kbps })))
+      .then(() => (cancelled ? Promise.reject(new Error('cancelled')) : window.matome.invoke('play:start', { serverId: src.serverId, ratingKey: src.ratingKey, offsetMs: offset, partId, audioStreamId: audioId, subtitleStreamId: subId, subtitleMode: subMode, compat, fullTranscode, session: sessionId.current, maxBitrateKbps: kbps })))
       .then(({ url }) => {
         if (cancelled) return
         setError('')
@@ -198,6 +201,17 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
             const detail = `${d.type}/${d.details}${d.response?.code ? ` HTTP ${d.response.code}` : ''}`
             void window.matome.invoke('app:log', { msg: `hls ${d.fatal ? 'FATAL' : 'error'} ${src.serverName}: ${detail}` })
             if (!d.fatal) return
+            // The browser cannot decode what the server passes through (typically DTS/E-AC3/TrueHD audio or HEVC video):
+            // let hls.js try once to recover, then ask the server to re-encode everything, then fail over.
+            if (d.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              if (!mediaRecovered.current) { mediaRecovered.current = true; h.recoverMediaError(); return }
+              if (!fullTranscode) {
+                resumeMs.current = base.current + el.currentTime * 1000
+                void window.matome.invoke('app:log', { msg: `media error on ${src.serverName}; retrying with a full transcode` })
+                setFullTranscode(true)
+                return
+              }
+            }
             // The server forgot our stream (segments answer 404): start a fresh session at the current position.
             if (isDeadSession(d) && deadRetries.current < 2) {
               deadRetries.current += 1
@@ -263,7 +277,7 @@ export function Player({ target, onClose }: { target: PlayTarget; onClose: () =>
       hls.current?.destroy()
       hls.current = null
     }
-  }, [src, audioId, subId, subMode, compat, kbps, srcIdx, restart, startReady, target.sources.length])
+  }, [src, audioId, subId, subMode, compat, fullTranscode, kbps, srcIdx, restart, startReady, target.sources.length])
 
   // Offline: play a downloaded file directly. No transcode, so the whole file is seekable and the clock starts at 0.
   const local = target.local
