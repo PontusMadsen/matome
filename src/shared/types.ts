@@ -158,6 +158,8 @@ export interface PlayRequest {
   subtitleMode?: 'burn' | 'auto'
   /** minimal request parameters (fallback when the full request gets a bare 400) */
   compat?: boolean
+  /** re-encode instead of copying streams (fallback when the browser cannot decode what the server passes through) */
+  fullTranscode?: boolean
   /** one id per playback: restarts (seek, quality, tracks) reuse it so the server replaces the stream instead of seeing a second one */
   session?: string
   maxBitrateKbps?: number

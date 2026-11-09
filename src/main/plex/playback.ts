@@ -8,6 +8,8 @@ export interface TranscodeOpts {
   maxBitrateKbps?: number
   /** minimal parameter set, for servers that reject the fuller request with a bare 400 */
   compat?: boolean
+  /** re-encode audio and video instead of copying them: the fallback when the browser can't decode the copied streams */
+  fullTranscode?: boolean
 }
 
 export function transcodeStartPath(ratingKey: string, o: TranscodeOpts): string {
@@ -21,7 +23,7 @@ export function transcodeStartPath(ratingKey: string, o: TranscodeOpts): string 
     directPlay: '0',
     // With a bitrate cap the server transcodes anyway; asking for a full transcode avoids copying audio
     // (DTS/E-AC3/TrueHD) that a browser can't decode. Uncapped streams may direct-stream.
-    directStream: o.maxBitrateKbps ? '0' : '1',
+    directStream: o.maxBitrateKbps || o.fullTranscode ? '0' : '1',
     fastSeek: '1',
     'X-Plex-Session-Identifier': o.session,
   })
@@ -29,7 +31,7 @@ export function transcodeStartPath(ratingKey: string, o: TranscodeOpts): string 
   if (o.maxBitrateKbps) q.set('maxVideoBitrate', String(o.maxBitrateKbps))
   if (o.compat) {
     for (const k of ['subtitles', 'fastSeek', 'X-Plex-Session-Identifier']) q.delete(k)
-    q.set('directStream', '1')
+    q.set('directStream', o.fullTranscode ? '0' : '1')
   }
   return `/video/:/transcode/universal/start.m3u8?${q}`
 }
