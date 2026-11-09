@@ -168,6 +168,17 @@ export function Settings() {
         </section>
 
         <Updates />
+
+        <section className={s.card}>
+          <h2>Troubleshooting</h2>
+          <div className={s.row}>
+            <div className={s.grow}>
+              <div className={s.label}>Log file</div>
+              <div className={s.hint}>Playback and sign-in problems are written here (never your Plex token). Send the last lines when something misbehaves.</div>
+            </div>
+            <button className="btn" onClick={() => void window.matome.invoke('app:reveal-log', undefined)}>Show in Finder</button>
+          </div>
+        </section>
       </div>
     </ScrollPage>
   )

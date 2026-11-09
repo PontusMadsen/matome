@@ -74,3 +74,9 @@ test('fullTranscode re-encodes even without a bitrate cap, also in compat mode',
   expect(q(false).get('directStream')).toBe('0')
   expect(q(true).get('directStream')).toBe('0')
 })
+
+test('burned-in subtitles force a video re-encode, otherwise the server may skip the burn', () => {
+  const q = (subtitles: 'auto' | 'burn' | 'none', compat = false) => new URLSearchParams(transcodeStartPath('42', { offsetMs: 0, session: 's', subtitles, compat }).split('?')[1])
+  expect(q('burn').get('directStream')).toBe('0')
+  expect(q('auto').get('directStream')).toBe('1')
+})

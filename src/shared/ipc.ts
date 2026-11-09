@@ -45,6 +45,7 @@ export interface IpcChannels {
   'update:apply': { req: void; res: { ok: boolean; reason?: string } }
   'play:streams': { req: { serverId: string; ratingKey: string }; res: PlayableStreams }
   'app:log': { req: { msg: string }; res: void }
+  'app:reveal-log': { req: void; res: void }
   'episode:setWatched': { req: { titleId: string; sources: { serverId: string; ratingKey: string }[]; watched: boolean }; res: void }
   'play:stop': { req: { serverId: string; session: string }; res: void }
   'subtitle:fetch': { req: { serverId: string; streamId: number; key?: string }; res: { text: string; via: string } }
