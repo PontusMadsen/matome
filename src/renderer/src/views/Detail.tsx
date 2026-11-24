@@ -175,7 +175,7 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
             <p className={s.summary}>{data?.summary ?? t.summary}</p>
             {data?.directors.length ? <p className="t-meta">Directed by {data.directors.join(', ')}</p> : null}
             <div className={s.actions}>
-              {t.type === 'movie' && downloadable(t.sources, perms).length > 0 && (
+              {t.type === 'movie' && (
                 <button className="btn btn-primary btn-lg" onClick={playMovie} disabled={!data || online.length === 0}>
                   <Icon name="play" size={16} fill /> {resume ? `Resume · ${fmtDur(resume)}` : 'Play'}
                 </button>
@@ -194,7 +194,7 @@ export function Detail({ t, onClose, auto }: { t: MergedTitle; onClose: () => vo
               >
                 <Icon name="check" size={16} /> Watched
               </button>
-              {t.type === 'movie' && (
+              {t.type === 'movie' && downloadable(t.sources, perms).length > 0 && (
                 <button className="btn btn-lg" title="Save the original file to this Mac" onClick={() => startDownload({ title: t.title, year: t.year, meta: { kind: 'movie', name: t.title, year: t.year }, poster: t.posters[0], sources: downloadable(t.sources, perms) })}>
                   <Icon name="download" size={16} /> Download
                 </button>
