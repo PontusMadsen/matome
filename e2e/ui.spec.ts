@@ -380,6 +380,21 @@ test('Download is not offered for a title whose only server refuses downloads', 
   await expect(page.getByRole('menuitem', { name: 'Download…' })).toBeVisible()
 })
 
+test('title page: Play is always there; Download only where a server allows it', async ({ page }) => {
+  await page.getByRole('button', { name: 'Movies' }).click()
+  await settle(page)
+  await page.getByLabel('Sort').selectOption('title')
+  // Zodiac is only on a server that refuses downloads: no Download, but it must still be playable
+  await page.locator('[data-tid="movie:19"]').scrollIntoViewIfNeeded()
+  await settle(page)
+  const card = page.locator('[data-tid="movie:19"]')
+  const box = (await card.boundingBox())!
+  await card.click({ position: { x: box.width / 2, y: box.height - 6 } }) // below the round play button, which would start playback instead
+  await page.getByRole('heading', { name: 'Play from' }).waitFor()
+  await expect(page.locator('button.btn-primary', { hasText: /Play|Resume/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Download', exact: true })).toHaveCount(0)
+})
+
 test('cards: the ⋮ shows only on hover; the round button plays, the rest of the card opens details', async ({ page }) => {
   await page.getByRole('button', { name: 'Movies' }).click()
   await settle(page)
