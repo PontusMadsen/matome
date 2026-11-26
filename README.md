@@ -48,7 +48,7 @@ pnpm dist             # local macOS build in release/
 ```
 Tests run against fixtures and `tools/mock-plex`; no Plex account is needed.
 
-Layout: `src/main/plex/` all Plex network code; `src/main/merge/` pure merge logic; `src/shared/ipc.ts` the typed IPC contract; `src/renderer/` the UI. Ground rules for changes are in [CONTRIBUTING.md](CONTRIBUTING.md). The original feature matrix is in [docs/parity.md](docs/parity.md) (older than the current feature set).
+Layout: `src/main/plex/` all Plex network code; `src/main/merge/` pure merge logic; `src/shared/ipc.ts` the typed IPC contract; `src/renderer/` the UI. Ground rules for changes are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Releases: see [docs/RELEASING.md](docs/RELEASING.md).
 

@@ -1,6 +1,8 @@
 name: release
 # Push a tag vX.Y.Z (see docs/RELEASING.md): this builds, signs, notarizes and attaches the Mac app to a GitHub Release (created if missing).
 on:
+  push:
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       tag:
